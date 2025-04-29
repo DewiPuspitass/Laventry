@@ -50,13 +50,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddItemsScreen(modifier: Modifier = Modifier) {
+fun AddItemsScreen(navcontroller: NavHostController) {
     Scaffold(
         containerColor = bg,
         topBar = {
@@ -70,7 +72,7 @@ fun AddItemsScreen(modifier: Modifier = Modifier) {
                             .size(50.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
-                            .clickable { },
+                            .clickable { navcontroller.popBackStack() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -79,7 +81,7 @@ fun AddItemsScreen(modifier: Modifier = Modifier) {
                         )
                     }
                 },
-                modifier = modifier.padding(
+                modifier = Modifier.padding(
                     start = 16.dp,
                     top = 16.dp,
                     end = 16.dp,
@@ -341,6 +343,6 @@ fun DropdownCategory(
 @Composable
 private fun AddItemsPrev() {
     LaventryTheme {
-        AddItemsScreen()
+        AddItemsScreen(rememberNavController())
     }
 }

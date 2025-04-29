@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -41,14 +40,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.dewipuspitasari0020.laventry.R
+import com.dewipuspitasari0020.laventry.navigation.Screen
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen(navController: NavHostController) {
     val selectedIndex = remember { mutableStateOf(0) }
     Scaffold(
         containerColor = bg,
@@ -79,7 +81,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                             .size(50.dp)
                             .clip(RoundedCornerShape(18.dp))
                             .background(color = white)
-                            .clickable {  }
+                            .clickable { navController.navigate(Screen.TambahBarang.route) }
                             .padding(8.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -90,7 +92,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                         )
                     }
                 },
-                modifier = modifier.padding(
+                modifier = Modifier.padding(
                     start = 16.dp,
                     top = 16.dp,
                     end = 16.dp,
@@ -290,6 +292,6 @@ fun CardBarang() {
 @Composable
 private fun MainPreview() {
     LaventryTheme{
-        MainScreen()
+        MainScreen(rememberNavController())
     }
 }
