@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Laventry</string>
+    <string name="add_items">Tambah Barang</string>
+    <string name="back">Kembali</string>
+    <string name="upload_image">Unggah Gambar</string>
+    <string name="item_name">Nama Barang</string>
+    <string name="category">Kategori</string>
+    <string name="quantity">Jumlah</string>
+    <string name="price">Harga Barang</string>
+    <string name="barcode">Scan Barcode</string>
+    <string name="description">Deskripsi</string>
+    <string name="cancel">Batal</string>
+    <string name="save">Simpan</string>
+</resources>
