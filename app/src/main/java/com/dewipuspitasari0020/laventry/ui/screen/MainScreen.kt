@@ -165,13 +165,13 @@ fun MainScreen(navController: NavHostController) {
             }
         }
     ) { innerPadding ->
-        ScreenContent(Modifier.padding(innerPadding))
+        ScreenContent(Modifier.padding(innerPadding), navController = navController)
     }
 }
 
 
 @Composable
-fun ScreenContent(modifier: Modifier = Modifier) {
+fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostController) {
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: BarangViewModel = viewModel(factory = factory)
@@ -235,14 +235,17 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(data) { barang ->
-                    val imagePath = barang.fotoBarang
+                    val imagePath = barang.foto_barang
 
                     CardBarang(
-                        label = barang.namaBarang,
+                        label = barang.nama_barang,
                         stock = barang.jumlah,
                         barcode = barang.barcode,
                         harga = barang.harga,
-                        image = imagePath
+                        image = imagePath,
+                        onClick = {
+                            navController.navigate(Screen.EditBarang.withId(barang.id))
+                        }
                     )
                 }
             }
@@ -293,7 +296,7 @@ fun CardInfo(label: String, jumlah: String, gambar: Painter, modifier: Modifier 
     }
 }
 @Composable
-fun CardBarang(label: String, stock: Int, barcode: String, harga: Double, image: String) {
+fun CardBarang(label: String, stock: Int, barcode: String, harga: Double, image: String, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .background(
@@ -301,6 +304,7 @@ fun CardBarang(label: String, stock: Int, barcode: String, harga: Double, image:
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(horizontal = 16.dp, vertical = 16.dp)
+            .clickable { onClick() }
     ) {
         Row(
             modifier = Modifier

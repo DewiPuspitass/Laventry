@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Laventry</string>
     <string name="add_items">Add Items</string>
+    <string name="edit_items">Edit Items</string>
     <string name="back">Back</string>
     <string name="upload_image">Upload Images</string>
     <string name="item_name">Item Name</string>
@@ -15,5 +16,9 @@
     <string name="lowstock">Low stock</string>
     <string name="total_items">Total items</string>
     <string name="list_kosong">There is No Data Right Now!</string>
+    <string name="other">Other Options</string>
+    <string name="delete">Delete Items</string>
+    <string name="delete_message">Delete this Item data?</string>
+    <string name="delete_button">Delete</string>
 
 </resources>

@@ -25,14 +25,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -41,6 +44,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,15 +72,26 @@ import com.dewipuspitasari0020.laventry.util.ViewModelFactory
 import com.dewipuspitasari0020.laventry.util.saveImageToInternalStorage
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModel
 
+const val KEY_ID_BARANG = "id"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddItemsScreen(navcontroller: NavHostController) {
+fun AddItemsScreen(navController: NavHostController, id: Long? = null) {
+    var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context)
+    val viewModel: BarangViewModel = viewModel(factory = factory)
+
+
     Scaffold(
         containerColor = bg,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(stringResource(R.string.add_items))
+                    if(id == null)
+                        Text(stringResource(R.string.add_items))
+                    else
+                        Text(stringResource(R.string.edit_items))
                 },
                 navigationIcon = {
                     Box(
@@ -84,13 +99,20 @@ fun AddItemsScreen(navcontroller: NavHostController) {
                             .size(50.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
-                            .clickable { navcontroller.popBackStack() },
+                            .clickable { navController.popBackStack() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
+                    }
+                },
+                actions = {
+                    if (id != null){
+                        DeleteAction {
+                            showDialog = true
+                        }
                     }
                 },
                 modifier = Modifier.padding(
@@ -108,12 +130,20 @@ fun AddItemsScreen(navcontroller: NavHostController) {
             )
         }
     ) { innerPadding ->
-        AddItems(modifier = Modifier.padding(innerPadding))
+        AddItems(modifier = Modifier.padding(innerPadding), id = id, navController = navController)
+        if(id != null && showDialog){
+            DisplayAlertDialog(
+                onDismissRequest = { showDialog = false }) {
+                showDialog = false
+                viewModel.delete(id)
+                navController.popBackStack()
+            }
+        }
     }
 }
 
 @Composable
-fun AddItems(modifier: Modifier = Modifier) {
+fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: NavHostController) {
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: BarangViewModel = viewModel(factory = factory)
@@ -127,6 +157,22 @@ fun AddItems(modifier: Modifier = Modifier) {
     var harga by remember { mutableStateOf("") }
     var barcode by remember { mutableStateOf("") }
     var deskripsi by remember { mutableStateOf("") }
+
+    LaunchedEffect(id) {
+        if (id != null) {
+            val barang = viewModel.getBarang(id)
+            barang?.let {
+                namaBarang = it.nama_barang
+                jumlah = it.jumlah.toString()
+                harga = it.harga.toString()
+                selectedCategory = it.kategori
+                barcode = it.barcode
+                deskripsi = it.deskripsi
+                savedPath = it.foto_barang
+                imageUri = Uri.parse(it.foto_barang)
+            }
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -168,19 +214,6 @@ fun AddItems(modifier: Modifier = Modifier) {
                 })
             }
         }
-
-
-//        if (foto.isNotEmpty()) {
-//            Image(
-//                painter = rememberAsyncImagePainter(model = foto),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(180.dp)
-//                    .clip(RoundedCornerShape(12.dp)),
-//                contentScale = ContentScale.Crop
-//            )
-//        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -254,16 +287,30 @@ fun AddItems(modifier: Modifier = Modifier) {
                         deskripsi.isNotBlank() &&
                         savedPath.isNotBlank()
                     ) {
-                        viewModel.insert(
-                            namaBarang = namaBarang,
-                            jumlah = jumlah.toInt(),
-                            harga = harga.toDouble(),
-                            kategori = selectedCategory,
-                            barcode = barcode,
-                            deskripsi = deskripsi,
-                            fotoBarang = savedPath
-                        )
+                        if(id == null) {
+                            viewModel.insert(
+                                namaBarang = namaBarang,
+                                jumlah = jumlah.toInt(),
+                                harga = harga.toDouble(),
+                                kategori = selectedCategory,
+                                barcode = barcode,
+                                deskripsi = deskripsi,
+                                fotoBarang = savedPath
+                            )
+                        } else {
+                            viewModel.update(
+                                id = id,
+                                namaBarang = namaBarang,
+                                jumlah = jumlah.toInt(),
+                                harga = harga.toDouble(),
+                                kategori = selectedCategory,
+                                barcode = barcode,
+                                deskripsi = deskripsi,
+                                fotoBarang = savedPath,
+                            )
+                        }
                     }
+                    navController.popBackStack()
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -369,55 +416,80 @@ fun DropdownCategory(
     Column(
         modifier = Modifier.padding(bottom = 16.dp)
     ) {
-    Text(
-        text = stringResource(R.string.category),
-        style = MaterialTheme.typography.bodyMedium,
-        color = Color.Black,
-        modifier = Modifier.padding(bottom = 6.dp)
-    )
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-    ) {
-        TextField(
-            value = selectedCategory,
-            onValueChange = {},
-            readOnly = true,
-            placeholder = { Text(stringResource(R.string.category), color = Color.Gray) },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(50.dp),
+        Text(
+            text = stringResource(R.string.category),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 6.dp)
         )
 
-        ExposedDropdownMenu(
+        ExposedDropdownMenuBox(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onExpandedChange = { expanded = !expanded },
         ) {
-            categories.forEach { selectionOption ->
-                DropdownMenuItem(
-                    text = { Text(selectionOption) },
-                    onClick = {
-                        onCategorySelected(selectionOption)
-                        expanded = false
-                    }
-                )
+            TextField(
+                value = selectedCategory,
+                onValueChange = {},
+                readOnly = true,
+                placeholder = { Text(stringResource(R.string.category), color = Color.Gray) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                shape = RoundedCornerShape(50.dp),
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                categories.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption) },
+                        onClick = {
+                            onCategorySelected(selectionOption)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }
-    }
 }
 
+@Composable
+fun DeleteAction(delete: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    IconButton(onClick = { expanded = true }) {
+        Icon(
+            imageVector = Icons.Filled.MoreVert,
+            contentDescription = stringResource(R.string.other),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false}
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Text(text = stringResource(id = R.string.delete))
+                },
+                onClick = {
+                    expanded = false
+                    delete()
+                }
+            )
+        }
+    }
+}
 
 @Preview
 @Composable

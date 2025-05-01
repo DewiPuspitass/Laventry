@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Laventry</string>
     <string name="add_items">Tambah Barang</string>
+    <string name="edit_items">Edit Barang</string>
     <string name="back">Kembali</string>
     <string name="upload_image">Unggah Gambar</string>
     <string name="item_name">Nama Barang</string>
@@ -16,4 +17,8 @@
     <string name="lowstock">Stok Sedikit</string>
     <string name="total_items">Total Barang</string>
     <string name="list_kosong">Tidak ada data saat ini!</string>
+    <string name="other">Opsi Lainnya</string>
+    <string name="delete">Hapus Barang</string>
+    <string name="delete_message">Hapus data barang ini?</string>
+    <string name="delete_button">Hapus</string>
 </resources>

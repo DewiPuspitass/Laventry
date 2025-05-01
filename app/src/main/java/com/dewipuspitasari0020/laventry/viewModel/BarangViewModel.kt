@@ -27,38 +27,48 @@ class BarangViewModel (private val dao: BarangDao): ViewModel() {
 
     fun insert(namaBarang: String, jumlah: Int, harga: Double, kategori: String, barcode: String, deskripsi: String, fotoBarang: String){
         val barang = Barang(
-            namaBarang = namaBarang,
+            nama_barang = namaBarang,
             jumlah = jumlah,
             harga = harga,
             kategori = kategori,
             barcode = barcode,
             deskripsi = deskripsi,
-            fotoBarang = fotoBarang
+            foto_barang = fotoBarang
         )
         viewModelScope.launch(Dispatchers.IO){
             dao.insert(barang)
         }
     }
 
-    suspend fun getMahasiswa(id: Long): Barang? {
-        return dao.getMahasiswaById(id)
+    suspend fun getBarang(id: Long): Barang? {
+        return dao.getBarangById(id)
     }
 
-    fun update(id: Long, namaBarang: String, jumlah: Int, harga: Double, kategori: String, barcode: String, deskripsi: String){
-        val barang = Barang(
-            id = id,
-            namaBarang = namaBarang,
-            jumlah = jumlah,
-            harga = harga,
-            kategori = kategori,
-            barcode = barcode,
-            deskripsi = deskripsi,
-            fotoBarang = "path/to/image.jpg"
-        )
-        viewModelScope.launch(Dispatchers.IO){
+    fun update(
+        id: Long,
+        namaBarang: String,
+        jumlah: Int,
+        harga: Double,
+        kategori: String,
+        barcode: String,
+        deskripsi: String,
+        fotoBarang: String
+    ) {
+        viewModelScope.launch {
+            val barang = Barang(
+                id = id,
+                nama_barang = namaBarang,
+                jumlah = jumlah,
+                harga = harga,
+                kategori = kategori,
+                barcode = barcode,
+                deskripsi = deskripsi,
+                foto_barang = fotoBarang
+            )
             dao.update(barang)
         }
     }
+
 
     fun delete(id: Long){
         viewModelScope.launch(Dispatchers.IO) {
