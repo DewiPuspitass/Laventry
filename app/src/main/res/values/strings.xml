@@ -22,5 +22,6 @@
     <string name="delete_button">Delete</string>
     <string name="list">List View</string>
     <string name="grid">Grid View</string>
+    <string name="input_invalid">cannot be empty</string>
 
 </resources>

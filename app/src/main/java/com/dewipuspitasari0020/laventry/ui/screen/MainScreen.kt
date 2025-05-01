@@ -313,7 +313,7 @@ fun CardBarang(
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = white),
-        elevation = CardDefaults.cardElevation(4.dp)
+//        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
             modifier = Modifier

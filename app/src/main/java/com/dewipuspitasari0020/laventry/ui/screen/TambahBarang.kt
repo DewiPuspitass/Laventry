@@ -229,7 +229,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                     selectedCategory = selectedCategory,
                     onCategorySelected = { selectedCategory = it }
                 )
-                }
+            }
         }
         InputPendek(stringResource(R.string.barcode), "Barcode", barcode) { barcode = it }
         Text(
