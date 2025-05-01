@@ -11,4 +11,9 @@
     <string name="description">Description</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="out_of_stock">Out of stock</string>
+    <string name="lowstock">Low stock</string>
+    <string name="total_items">Total items</string>
+    <string name="list_kosong">There is No Data Right Now!</string>
+
 </resources>

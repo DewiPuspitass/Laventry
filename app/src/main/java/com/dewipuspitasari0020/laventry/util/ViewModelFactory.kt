@@ -1,10 +1,15 @@
 package com.dewipuspitasari0020.laventry.util
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.dewipuspitasari0020.laventry.database.BarangDb
 import com.dewipuspitasari0020.laventry.ui.screen.MainViewModel
+import com.dewipuspitasari0020.laventry.viewModel.BarangViewModel
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class ViewModelFactory(
     private val context: Context
@@ -14,7 +19,29 @@ class ViewModelFactory(
         val dao = BarangDb.getInstance(context).dao
         if (modelClass.isAssignableFrom(MainViewModel::class.java)){
             return MainViewModel(dao) as T
+        } else if (modelClass.isAssignableFrom(BarangViewModel::class.java)){
+            return BarangViewModel(dao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel Class")
     }
 }
+
+fun saveImageToInternalStorage(context: Context, imageUri: Uri): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(imageUri)
+        val fileName = "img_${System.currentTimeMillis()}.jpg"
+        val file = File(context.filesDir, fileName)
+
+        inputStream?.use { input ->
+            FileOutputStream(file).use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        file.absolutePath
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null
+    }
+}
+

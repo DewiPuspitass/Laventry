@@ -12,4 +12,8 @@
     <string name="description">Deskripsi</string>
     <string name="cancel">Batal</string>
     <string name="save">Simpan</string>
+    <string name="out_of_stock">Habis</string>
+    <string name="lowstock">Stok Sedikit</string>
+    <string name="total_items">Total Barang</string>
+    <string name="list_kosong">Tidak ada data saat ini!</string>
 </resources>

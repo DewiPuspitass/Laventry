@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -28,25 +29,36 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.navigation.Screen
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
+import com.dewipuspitasari0020.laventry.util.ViewModelFactory
+import com.dewipuspitasari0020.laventry.viewModel.BarangViewModel
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -160,6 +172,19 @@ fun MainScreen(navController: NavHostController) {
 
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context)
+    val viewModel: BarangViewModel = viewModel(factory = factory)
+    val data by viewModel.allBarang.collectAsState()
+
+    val outOfStock by viewModel.outOfStock.collectAsState()
+    val lowStock by viewModel.lowStock.collectAsState()
+    val totalItems by viewModel.totalItems.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadSummaryData()
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -170,13 +195,18 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                 bottom = 0.dp
             )
     ) {
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        )  {
-            items(3) {
-                CardInfo()
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            item {
+                CardInfo(stringResource(R.string.out_of_stock), "$outOfStock", painterResource(R.drawable.boxopenfull))
+            }
+            item {
+                CardInfo(stringResource(R.string.lowstock), "$lowStock", painterResource(R.drawable.chart))
+            }
+            item {
+                CardInfo(stringResource(R.string.total_items), "$totalItems", painterResource(R.drawable.items))
             }
         }
+
         Row (
             modifier = Modifier
                 .padding(vertical = 20.dp)
@@ -190,19 +220,38 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                 Text("View All")
             }
         }
-        LazyColumn (
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        )  {
-            items(5) {
-                CardBarang()
+        if (data.isEmpty()) {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = stringResource(R.string.list_kosong))
+            }
+        }else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(data) { barang ->
+                    val imagePath = barang.fotoBarang
+
+                    CardBarang(
+                        label = barang.namaBarang,
+                        stock = barang.jumlah,
+                        barcode = barang.barcode,
+                        harga = barang.harga,
+                        image = imagePath
+                    )
+                }
             }
         }
     }
-
 }
 
 @Composable
-fun CardInfo(modifier: Modifier = Modifier) {
+fun CardInfo(label: String, jumlah: String, gambar: Painter, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .background(
@@ -219,8 +268,8 @@ fun CardInfo(modifier: Modifier = Modifier) {
                     .padding(8.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.boxopenfull),
-                    contentDescription = "Icon dari Flaticon",
+                    painter = gambar,
+                    contentDescription = "Icon dari drawable",
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -231,12 +280,12 @@ fun CardInfo(modifier: Modifier = Modifier) {
         ) {
             Column {
                 Text(
-                    "60",
+                    jumlah,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 Text(
-                    "out of stock",
+                    label,
                     color = Color.Black
                 )
             }
@@ -244,7 +293,7 @@ fun CardInfo(modifier: Modifier = Modifier) {
     }
 }
 @Composable
-fun CardBarang() {
+fun CardBarang(label: String, stock: Int, barcode: String, harga: Double, image: String) {
     Column(
         modifier = Modifier
             .background(
@@ -263,25 +312,26 @@ fun CardBarang() {
                     .background(color = bg, shape = RoundedCornerShape(16.dp))
                     .padding(8.dp)
             ) {
+                val imageFile = File(image)
+                val painter = rememberAsyncImagePainter(imageFile)
                 Image(
-                    painter = painterResource(id = R.drawable.boxopenfull),
-                    contentDescription = "Icon dari Flaticon",
-                    modifier = Modifier.fillMaxSize()
+                    painter = painter,
+                    contentDescription = "Gambar Barang",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("Coca Cola", fontWeight = FontWeight.Bold)
-                Text("Stock: 10")
-                Text("kode: 4237423746")
+            Column(modifier = Modifier.weight(1f)) {
+                Text(label, fontWeight = FontWeight.Bold)
+                Text("Stok: $stock")
+                Text("Barcode: $barcode")
             }
 
             Column {
-                Text("Rp 5.000")
+                Text("Rp ${harga.toInt()}")
             }
         }
     }

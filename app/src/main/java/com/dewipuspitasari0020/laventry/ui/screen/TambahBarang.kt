@@ -1,7 +1,11 @@
 package com.dewipuspitasari0020.laventry.ui.screen
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +19,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -46,15 +52,21 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
+import com.dewipuspitasari0020.laventry.util.ViewModelFactory
+import com.dewipuspitasari0020.laventry.util.saveImageToInternalStorage
+import com.dewipuspitasari0020.laventry.viewModel.BarangViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,38 +112,86 @@ fun AddItemsScreen(navcontroller: NavHostController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddItems(modifier: Modifier = Modifier) {
-    var itemName by remember { mutableStateOf("") }
-    var quantity by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context)
+    val viewModel: BarangViewModel = viewModel(factory = factory)
+
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var savedPath by remember { mutableStateOf("") }
+
+    var namaBarang by remember { mutableStateOf("") }
+    var jumlah by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("") }
-    var unitPrice by remember { mutableStateOf("") }
+    var harga by remember { mutableStateOf("") }
     var barcode by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    var deskripsi by remember { mutableStateOf("") }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            imageUri = it
+            val path = saveImageToInternalStorage(context, it)
+            if (path != null) {
+                savedPath = path
+            }
+        }
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        DottedBorderBox(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp),
-            onClick = {  }
-        )
+                .height(180.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.LightGray)
+                .clickable { launcher.launch("image/*") },
+            contentAlignment = Alignment.Center
+        ) {
+            if (imageUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = imageUri),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                DottedBorderBox(modifier = Modifier.fillMaxSize(), onClick = {
+                    launcher.launch("image/*")
+                })
+            }
+        }
+
+
+//        if (foto.isNotEmpty()) {
+//            Image(
+//                painter = rememberAsyncImagePainter(model = foto),
+//                contentDescription = null,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(180.dp)
+//                    .clip(RoundedCornerShape(12.dp)),
+//                contentScale = ContentScale.Crop
+//            )
+//        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
-                InputPendek(stringResource(R.string.add_items), stringResource(R.string.add_items), itemName) { itemName = it }
-                InputPendek(stringResource(R.string.price), "Rp 0", unitPrice) { unitPrice = it }
+                InputPendek(stringResource(R.string.item_name), stringResource(R.string.item_name), namaBarang) { namaBarang = it }
+                InputPendek(stringResource(R.string.price), "Rp 0", harga) { harga = it }
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                InputPendek(stringResource(R.string.quantity), stringResource(R.string.quantity), quantity) { quantity = it }
+                InputPendek(stringResource(R.string.quantity), stringResource(R.string.quantity), jumlah) { jumlah = it }
                 DropdownCategory(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { selectedCategory = it }
@@ -147,18 +207,18 @@ fun AddItems(modifier: Modifier = Modifier) {
         )
 
         TextField(
-            value = description,
-            onValueChange = { description = it },
+            value = deskripsi,
+            onValueChange = { deskripsi = it },
             modifier = Modifier.height(120.dp)
                 .fillMaxWidth()
                 .background(Color.White, shape = RoundedCornerShape(50.dp)
                 ),
             shape = RoundedCornerShape(24.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
                 focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
+                unfocusedIndicatorColor = Color.Transparent
             ),
             singleLine = true
         )
@@ -184,7 +244,27 @@ fun AddItems(modifier: Modifier = Modifier) {
             }
 
             Button(
-                onClick = { },
+                onClick = {
+                    if (
+                        namaBarang.isNotBlank() &&
+                        jumlah.isNotBlank() &&
+                        harga.isNotBlank() &&
+                        selectedCategory.isNotBlank() &&
+                        barcode.isNotBlank() &&
+                        deskripsi.isNotBlank() &&
+                        savedPath.isNotBlank()
+                    ) {
+                        viewModel.insert(
+                            namaBarang = namaBarang,
+                            jumlah = jumlah.toInt(),
+                            harga = harga.toDouble(),
+                            kategori = selectedCategory,
+                            barcode = barcode,
+                            deskripsi = deskripsi,
+                            fotoBarang = savedPath
+                        )
+                    }
+                },
                 modifier = Modifier
                     .weight(1f)
                     .height(50.dp),
@@ -196,8 +276,8 @@ fun AddItems(modifier: Modifier = Modifier) {
             ) {
                 Text("Save")
             }
-        }
 
+        }
     }
 }
 
@@ -241,7 +321,6 @@ fun DottedBorderBox(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputPendek(
     label: String,
@@ -267,11 +346,11 @@ fun InputPendek(
                 .fillMaxWidth()
                 .background(Color.White, shape = RoundedCornerShape(50.dp)),
             shape = RoundedCornerShape(50.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
                 focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
+                unfocusedIndicatorColor = Color.Transparent
             ),
             singleLine = true
         )
@@ -312,10 +391,11 @@ fun DropdownCategory(
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth(),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
                 focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
             ),
             shape = RoundedCornerShape(50.dp),
         )
