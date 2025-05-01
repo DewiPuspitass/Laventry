@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -59,6 +60,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -81,7 +85,6 @@ fun AddItemsScreen(navController: NavHostController, id: Long? = null) {
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: BarangViewModel = viewModel(factory = factory)
-
 
     Scaffold(
         containerColor = bg,
@@ -141,7 +144,6 @@ fun AddItemsScreen(navController: NavHostController, id: Long? = null) {
         }
     }
 }
-
 @Composable
 fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: NavHostController) {
     val context = LocalContext.current
@@ -150,6 +152,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var savedPath by remember { mutableStateOf("") }
+    var imageError by remember { mutableStateOf("") }
 
     var namaBarang by remember { mutableStateOf("") }
     var jumlah by remember { mutableStateOf("") }
@@ -157,6 +160,14 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
     var harga by remember { mutableStateOf("") }
     var barcode by remember { mutableStateOf("") }
     var deskripsi by remember { mutableStateOf("") }
+
+    var namaBarangError by remember { mutableStateOf("") }
+    var jumlahError by remember { mutableStateOf("") }
+    var hargaError by remember { mutableStateOf("") }
+    var barcodeError by remember { mutableStateOf("") }
+    var deskripsiError by remember { mutableStateOf("") }
+    var selectedCategoryError by remember { mutableStateOf("") }
+
 
     LaunchedEffect(id) {
         if (id != null) {
@@ -182,6 +193,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
             val path = saveImageToInternalStorage(context, it)
             if (path != null) {
                 savedPath = path
+                imageError = ""
             }
         }
     }
@@ -214,24 +226,76 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                 })
             }
         }
+        if (imageError.isNotBlank()) {
+            Text(
+                text = imageError,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
-                InputPendek(stringResource(R.string.item_name), stringResource(R.string.item_name), namaBarang) { namaBarang = it }
-                InputPendek(stringResource(R.string.price), "Rp 0", harga) { harga = it }
+                InputPendek(
+                    label = stringResource(R.string.item_name),
+                    placeholder = stringResource(R.string.item_name),
+                    value = namaBarang,
+                    onValueChange = { namaBarang = it },
+                    keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words)
+                )
+                if (namaBarangError.isNotBlank()) {
+                    Text(text = namaBarangError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 24.dp))
+                }
+
+                InputPendek(
+                    label = stringResource(R.string.price),
+                    placeholder = "Rp 0",
+                    value = harga,
+                    onValueChange = { harga = it },
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                )
+                if (hargaError.isNotBlank()) {
+                    Text(text = hargaError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
+                }
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                InputPendek(stringResource(R.string.quantity), stringResource(R.string.quantity), jumlah) { jumlah = it }
+                InputPendek(
+                    label = stringResource(R.string.quantity),
+                    placeholder = "Quantity",
+                    value = jumlah,
+                    onValueChange = { jumlah = it },
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                )
+                if (jumlahError.isNotBlank()) {
+                    Text(text = jumlahError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
+                }
+
                 DropdownCategory(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { selectedCategory = it }
                 )
+                if (selectedCategoryError.isNotBlank()) {
+                    Text(text = selectedCategoryError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
+                }
             }
         }
-        InputPendek(stringResource(R.string.barcode), "Barcode", barcode) { barcode = it }
+
+
+        InputPendek(
+            label = stringResource(R.string.barcode),
+            placeholder = "Barcode",
+            value = barcode,
+            onValueChange = { barcode = it },
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+        )
+        if (barcodeError.isNotBlank()) {
+            Text(text = barcodeError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
+        }
+
         Text(
             text = stringResource(R.string.description),
             style = MaterialTheme.typography.bodyMedium,
@@ -253,8 +317,17 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
             singleLine = true
         )
+        if (deskripsiError.isNotBlank()) {
+            Text(text = deskripsiError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -278,16 +351,51 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
 
             Button(
                 onClick = {
-                    if (
-                        namaBarang.isNotBlank() &&
-                        jumlah.isNotBlank() &&
-                        harga.isNotBlank() &&
-                        selectedCategory.isNotBlank() &&
-                        barcode.isNotBlank() &&
-                        deskripsi.isNotBlank() &&
-                        savedPath.isNotBlank()
+                    namaBarangError = ""
+                    jumlahError = ""
+                    hargaError = ""
+                    barcodeError = ""
+                    deskripsiError = ""
+                    selectedCategoryError = ""
+                    imageError = ""
+
+                    if (namaBarang.isBlank()) {
+                        namaBarangError = "Nama Barang is required"
+                    }
+
+                    if (jumlah.isBlank() || jumlah.toIntOrNull() == null) {
+                        jumlahError = "Jumlah must be a valid number"
+                    }
+
+                    if (harga.isBlank() || harga.toDoubleOrNull() == null) {
+                        hargaError = "Harga must be a valid number"
+                    }
+
+                    if (selectedCategory.isBlank()) {
+                        selectedCategoryError = "Category must be selected"
+                    }
+
+                    if (barcode.isBlank()) {
+                        barcodeError = "Barcode is required"
+                    }
+
+                    if (deskripsi.isBlank()) {
+                        deskripsiError = "Deskripsi is required"
+                    }
+
+                    if (savedPath.isBlank()) {
+                        imageError = "Image is required"
+                    }
+
+                    if (namaBarangError.isBlank() &&
+                        jumlahError.isBlank() &&
+                        hargaError.isBlank() &&
+                        selectedCategoryError.isBlank() &&
+                        barcodeError.isBlank() &&
+                        deskripsiError.isBlank() &&
+                        imageError.isBlank()
                     ) {
-                        if(id == null) {
+                        if (id == null) {
                             viewModel.insert(
                                 namaBarang = namaBarang,
                                 jumlah = jumlah.toInt(),
@@ -309,8 +417,8 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                                 fotoBarang = savedPath,
                             )
                         }
+                        navController.popBackStack()
                     }
-                    navController.popBackStack()
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -327,6 +435,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
         }
     }
 }
+
 
 @Composable
 fun DottedBorderBox(
@@ -373,7 +482,8 @@ fun InputPendek(
     label: String,
     placeholder: String,
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text)
 ) {
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -399,6 +509,7 @@ fun InputPendek(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
+            keyboardOptions = keyboardOptions,
             singleLine = true
         )
     }
