@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dewipuspitasari0020.laventry.ui.screen.AddItemsScreen
+import com.dewipuspitasari0020.laventry.ui.screen.InventoryScreen
 import com.dewipuspitasari0020.laventry.ui.screen.KEY_ID_BARANG
 import com.dewipuspitasari0020.laventry.ui.screen.MainScreen
 
@@ -31,6 +32,9 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()) {
         ){ navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getLong(KEY_ID_BARANG)
             AddItemsScreen(navController, id)
+        }
+        composable(route = Screen.Inventory.route) {
+            InventoryScreen(navController)
         }
     }
 }
