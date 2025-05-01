@@ -24,6 +24,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dewipuspitasari0020.laventry.R
+import com.dewipuspitasari0020.laventry.ui.theme.blue
+import com.dewipuspitasari0020.laventry.ui.theme.white
 
 @Composable
 fun BottomBar(
@@ -52,7 +54,7 @@ fun BottomBar(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(if (isSelected) Color(0xFFE0F2F1) else Color.Transparent)
+                        .background(if (isSelected) blue else Color.Transparent)
                         .clickable { onItemSelected(index) }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
@@ -60,11 +62,11 @@ fun BottomBar(
                         painter = painterResource(id = icons[index]),
                         contentDescription = label,
                         modifier = Modifier.size(24.dp),
-                        tint = Color.Black
+                        tint = (if (isSelected) white else Color.Black)
                     )
                     Text(
                         text = label,
-                        color = Color.Black,
+                        color = (if (isSelected) white else Color.Black),
                         fontSize = 12.sp
                     )
                 }
