@@ -45,8 +45,8 @@ fun BottomBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val items = listOf("Home", "Inventory", "Pengaturan")
-            val icons = listOf(R.drawable.home, R.drawable.inventory, R.drawable.settings)
+            val items = listOf("Home", "Inventory", "Category", "Settings")
+            val icons = listOf(R.drawable.home, R.drawable.inventory, R.drawable.tags,R.drawable.settings)
 
             items.forEachIndexed { index, label ->
                 val isSelected = index == selectedIndex
