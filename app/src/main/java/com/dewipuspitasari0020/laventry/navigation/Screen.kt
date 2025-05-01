@@ -9,4 +9,5 @@ sealed class Screen (val route: String){
         fun withId(id: Long) = "editScreen/$id"
     }
     data object Inventory: Screen("inventoryScreen")
+    data object Profile: Screen("profileScreen")
 }

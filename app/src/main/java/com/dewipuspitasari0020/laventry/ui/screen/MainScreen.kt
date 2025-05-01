@@ -81,7 +81,7 @@ fun MainScreen(navController: NavHostController) {
                             .size(50.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
-                            .clickable { },
+                            .clickable { navController.navigate(Screen.Profile.route) },
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
