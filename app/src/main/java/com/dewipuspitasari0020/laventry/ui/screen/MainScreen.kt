@@ -23,10 +23,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -34,8 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.dewipuspitasari0020.laventry.R
@@ -65,7 +61,15 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavHostController) {
-    val selectedIndex = remember { mutableStateOf(0) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val selectedIndex = when (currentRoute) {
+        Screen.Home.route -> 0
+        Screen.Inventory.route -> 1
+//        Screen.Settings.route -> 2
+        else -> -1
+    }
     Scaffold(
         containerColor = bg,
         topBar = {
@@ -121,50 +125,16 @@ fun MainScreen(navController: NavHostController) {
             )
         },
         bottomBar = {
-            Surface(
-                tonalElevation = 3.dp,
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                color = white
-            ){
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = selectedIndex.value == 1,
-                        onClick = {  },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.home),
-                                contentDescription = "Beranda",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        },
-                        label = { Text("Home") },
-                    )
-                    NavigationBarItem(
-                        selected = selectedIndex.value == 1,
-                        onClick = { navController.navigate(Screen.Inventory.route) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.inventory),
-                                contentDescription = "Inventory",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        },
-                        label = { Text("Inventory") }
-                    )
-                    NavigationBarItem(
-                        selected = selectedIndex.value == 1,
-                        onClick = { selectedIndex.value = 1 },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.settings),
-                                contentDescription = "Pengaturan",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        },
-                        label = { Text("Pengaturan") }
-                    )
+            BottomBar(
+                selectedIndex = selectedIndex,
+                onItemSelected = { index ->
+                    when (index) {
+                        0 -> navController.navigate(Screen.Home.route)
+                        1 -> navController.navigate(Screen.Inventory.route)
+//                        2 -> navController.navigate(Screen.Settings.route)
+                    }
                 }
-            }
+            )
         }
     ) { innerPadding ->
         ScreenContent(Modifier.padding(innerPadding), navController = navController)
