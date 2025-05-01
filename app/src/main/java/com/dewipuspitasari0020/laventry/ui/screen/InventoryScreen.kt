@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.dataStore
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -60,13 +61,19 @@ import com.dewipuspitasari0020.laventry.navigation.Screen
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
+import com.dewipuspitasari0020.laventry.util.SettingsDataStore
 import com.dewipuspitasari0020.laventry.util.ViewModelFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryScreen(navController: NavHostController) {
-    var showList by remember { mutableStateOf(true) }
+    val dataStore = SettingsDataStore(LocalContext.current)
+    val showList by dataStore.layoutFlow.collectAsState(true)
+
     val selectedIndex = remember { mutableStateOf(0) }
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
@@ -118,7 +125,9 @@ fun InventoryScreen(navController: NavHostController) {
                                 .size(50.dp)
                                 .clip(RoundedCornerShape(18.dp))
                                 .background(color = white)
-                                .clickable { showList = !showList }
+                                .clickable { CoroutineScope(Dispatchers.IO).launch {
+                                    dataStore.saveLayout(!showList)
+                                } }
                                 .padding(8.dp),
                             contentAlignment = Alignment.Center
                         ) {
