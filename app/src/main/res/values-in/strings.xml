@@ -24,4 +24,10 @@
     <string name="list">Tampilan list</string>
     <string name="grid">Tampilan grid</string>
     <string name="input_invalid">Tidak boleh kosong</string>
+    <string name="profile">Profil</string>
+    <string name="photo_profile">Foto Profil</string>
+    <string name="icon_person">Ikon Orang</string>
+    <string name="icon_info">Ikon Info</string>
+    <string name="icon_class">Ikon Kelas</string>
+    <string name="add_category">Tambah Kategori</string>
 </resources>
