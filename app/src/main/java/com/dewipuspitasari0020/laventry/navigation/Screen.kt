@@ -10,4 +10,5 @@ sealed class Screen (val route: String){
     }
     data object Inventory: Screen("inventoryScreen")
     data object Profile: Screen("profileScreen")
+    data object Category: Screen("categoryScreen")
 }

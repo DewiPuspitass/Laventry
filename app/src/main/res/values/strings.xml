@@ -24,12 +24,13 @@
     <string name="grid">Grid View</string>
     <string name="input_invalid">cannot be empty</string>
     <string name="profile">Profile</string>
-    <string name="photo_profile">Foto Profile</string>
-    <string name="developer_name">Dewi Puspita Sari</string>
-    <string name="developer_nim">607062300020</string>
-    <string name="developer_class">D3IF-47-03</string>
+    <string name="photo_profile">Photo Profile</string>
+    <string name="developer_name" translatable="false">Dewi Puspita Sari</string>
+    <string name="developer_nim" translatable="false">607062300020</string>
+    <string name="developer_class" translatable="false">D3IF-47-03</string>
     <string name="icon_person">Icon Person</string>
     <string name="icon_info">Icon Info</string>
     <string name="icon_class">Icon Class</string>
+    <string name="add_category">Add Category</string>
 
 </resources>

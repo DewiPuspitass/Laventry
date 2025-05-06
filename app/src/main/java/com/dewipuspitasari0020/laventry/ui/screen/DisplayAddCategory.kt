@@ -1,0 +1,92 @@
+package com.dewipuspitasari0020.laventry.ui.screen
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.dewipuspitasari0020.laventry.R
+import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
+
+@Composable
+fun DisplayAddCategory(
+    title: String = "Masukkan Data",
+    hint: String = "Tulis sesuatu...",
+    onDismissRequest: () -> Unit,
+    onConfirmation: (String) -> Unit
+) {
+    var text by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Column (horizontalAlignment = Alignment.CenterHorizontally){
+                Text(text = stringResource(R.string.add_category), fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                Spacer(modifier = Modifier.height(24.dp))
+                TextField(
+                    value = text,
+                    onValueChange = { text = it},
+                    placeholder = { Text(stringResource(R.string.add_category), color = Color.Gray) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White, shape = RoundedCornerShape(50.dp)),
+                    shape = RoundedCornerShape(50.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirmation(text)
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Batal")
+            }
+        }
+    )
+}
+
+@Preview
+@Composable
+private fun addCategoryPreview() {
+    LaventryTheme {
+        DisplayAddCategory(
+            onDismissRequest = {},
+            onConfirmation = {},
+            title = "",
+            hint= ""
+        )
+    }
+}

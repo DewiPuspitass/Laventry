@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dewipuspitasari0020.laventry.ui.screen.AddItemsScreen
+import com.dewipuspitasari0020.laventry.ui.screen.CategoryScreen
 import com.dewipuspitasari0020.laventry.ui.screen.InventoryScreen
 import com.dewipuspitasari0020.laventry.ui.screen.KEY_ID_BARANG
 import com.dewipuspitasari0020.laventry.ui.screen.MainScreen
@@ -39,6 +40,9 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()) {
         }
         composable(route = Screen.Profile.route) {
             ProfileScreen(navController)
+        }
+        composable(route = Screen.Category.route) {
+            CategoryScreen(navController)
         }
     }
 }
