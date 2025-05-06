@@ -67,7 +67,7 @@ fun MainScreen(navController: NavHostController) {
     val selectedIndex = when (currentRoute) {
         Screen.Home.route -> 0
         Screen.Inventory.route -> 1
-        Screen.Category.route -> 2
+        Screen.Kategori.route -> 2
         else -> -1
     }
     Scaffold(
@@ -131,7 +131,7 @@ fun MainScreen(navController: NavHostController) {
                     when (index) {
                         0 -> navController.navigate(Screen.Home.route)
                         1 -> navController.navigate(Screen.Inventory.route)
-//                        2 -> navController.navigate(Screen.Settings.route)
+                        2 -> navController.navigate(Screen.Kategori.route)
                     }
                 }
             )

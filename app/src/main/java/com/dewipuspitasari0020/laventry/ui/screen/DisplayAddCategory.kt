@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -26,11 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
+import com.dewipuspitasari0020.laventry.ui.theme.bg
 
 @Composable
 fun DisplayAddCategory(
-    title: String = "Masukkan Data",
-    hint: String = "Tulis sesuatu...",
     onDismissRequest: () -> Unit,
     onConfirmation: (String) -> Unit
 ) {
@@ -38,17 +38,37 @@ fun DisplayAddCategory(
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = {
-            Text(text = title)
+        confirmButton = {
+            TextButton(onClick = { onConfirmation(text) }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Batal")
+            }
         },
         text = {
-            Column (horizontalAlignment = Alignment.CenterHorizontally){
-                Text(text = stringResource(R.string.add_category), fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.add_category),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
                 Spacer(modifier = Modifier.height(24.dp))
                 TextField(
                     value = text,
-                    onValueChange = { text = it},
-                    placeholder = { Text(stringResource(R.string.add_category), color = Color.Gray) },
+                    onValueChange = { text = it },
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.add_category),
+                            color = Color.Gray
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White, shape = RoundedCornerShape(50.dp)),
@@ -63,20 +83,10 @@ fun DisplayAddCategory(
                 )
             }
         },
-        confirmButton = {
-            TextButton(onClick = {
-                onConfirmation(text)
-            }) {
-                Text("OK")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text("Batal")
-            }
-        }
+        containerColor = bg
     )
 }
+
 
 @Preview
 @Composable
@@ -85,8 +95,6 @@ private fun addCategoryPreview() {
         DisplayAddCategory(
             onDismissRequest = {},
             onConfirmation = {},
-            title = "",
-            hint= ""
         )
     }
 }

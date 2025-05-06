@@ -41,10 +41,7 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()) {
         composable(route = Screen.Profile.route) {
             ProfileScreen(navController)
         }
-        composable(route = Screen.Category.route) {
-            CategoryScreen(navController)
-        }
-        composable(route = Screen.TambahKategory.route) {
+        composable(route = Screen.Kategori.route) {
             CategoryScreen(navController)
         }
     }

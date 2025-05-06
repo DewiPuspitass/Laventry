@@ -22,7 +22,7 @@ abstract class KategoriDb:RoomDatabase() {
                     instance = Room.databaseBuilder(
                         context.applicationContext,
                         KategoriDb::class.java,
-                        "barang.db"
+                        "kategori.db"
                     ).build()
                     KategoriDb.INSTANCE = instance
                 }
