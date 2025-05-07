@@ -32,4 +32,8 @@ interface BarangDao {
 
     @Query("SELECT SUM(jumlah) FROM barang")
     suspend fun getTotalItemCount(): Int
+
+    @Query("SELECT COUNT(*) FROM barang WHERE kategoriId = :kategoriId")
+    suspend fun getBarangCountByKategori(kategoriId: Long): Int
+
 }

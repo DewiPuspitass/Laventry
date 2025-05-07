@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dewipuspitasari0020.laventry.R
+import com.dewipuspitasari0020.laventry.model.Kategori
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 
@@ -87,6 +88,86 @@ fun DisplayAddCategory(
     )
 }
 
+@Composable
+fun DisplayEditCategory(
+    kategori: Kategori,
+    onDismissRequest: () -> Unit,
+    onConfirmation: (Kategori) -> Unit
+) {
+    var text by remember { mutableStateOf(kategori.nama_kategori) }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            val updatedKategori = kategori.copy(nama_kategori = text)
+            TextButton(onClick = { onConfirmation(updatedKategori) }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Batal")
+            }
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.edit_category),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                TextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.add_category),
+                            color = Color.Gray
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White, shape = RoundedCornerShape(50.dp)),
+                    shape = RoundedCornerShape(50.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    singleLine = true
+                )
+            }
+        },
+        containerColor = bg
+    )
+}
+
+@Composable
+fun DisplayAlertDeleteDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit
+) {
+    AlertDialog(
+        text = { Text(text = stringResource(R.string.delete_message)) },
+        confirmButton = {
+            TextButton(onClick = { onConfirmation() }) {
+                Text(text = stringResource(R.string.delete_button))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDismissRequest() }) {
+                Text(text = stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = onDismissRequest
+    )
+}
 
 @Preview
 @Composable

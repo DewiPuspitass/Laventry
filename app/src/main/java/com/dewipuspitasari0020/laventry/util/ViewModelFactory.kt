@@ -24,7 +24,7 @@ class ViewModelFactory(
         } else if (modelClass.isAssignableFrom(BarangViewModel::class.java)){
             return BarangViewModel(barangDao, kategoriDao) as T
         }  else if (modelClass.isAssignableFrom(KategoriViewModel::class.java)) {
-            return KategoriViewModel(kategoriDao) as T
+            return KategoriViewModel(kategoriDao, barangDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel Class")
     }

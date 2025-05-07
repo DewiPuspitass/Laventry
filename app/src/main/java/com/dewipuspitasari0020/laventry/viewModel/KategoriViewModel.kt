@@ -2,6 +2,7 @@ package com.dewipuspitasari0020.laventry.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dewipuspitasari0020.laventry.database.BarangDao
 import com.dewipuspitasari0020.laventry.database.KategoriDao
 import com.dewipuspitasari0020.laventry.model.Kategori
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class KategoriViewModel(private val dao: KategoriDao): ViewModel() {
+class KategoriViewModel(private val dao: KategoriDao,  private val barangDao: BarangDao): ViewModel() {
     val allKategori: StateFlow<List<Kategori>> = dao.getKategori()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -46,4 +47,13 @@ class KategoriViewModel(private val dao: KategoriDao): ViewModel() {
             dao.deleteById(id)
         }
     }
+
+    fun isKategoriUsed(id: Long, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val count = barangDao.getBarangCountByKategori(id)
+            onResult(count > 0)
+        }
+    }
+
+
 }
