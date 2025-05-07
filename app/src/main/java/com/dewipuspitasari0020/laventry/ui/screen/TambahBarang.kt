@@ -1,8 +1,11 @@
 package com.dewipuspitasari0020.laventry.ui.screen
 
 import android.net.Uri
+import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -46,6 +49,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,6 +74,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.dewipuspitasari0020.laventry.R
+import com.dewipuspitasari0020.laventry.model.Kategori
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.util.ViewModelFactory
@@ -78,6 +83,7 @@ import com.dewipuspitasari0020.laventry.viewModel.BarangViewModel
 
 const val KEY_ID_BARANG = "id"
 
+@RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddItemsScreen(navController: NavHostController, id: Long? = null) {
@@ -144,6 +150,8 @@ fun AddItemsScreen(navController: NavHostController, id: Long? = null) {
         }
     }
 }
+
+@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: NavHostController) {
     val context = LocalContext.current
@@ -156,7 +164,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
 
     var namaBarang by remember { mutableStateOf("") }
     var jumlah by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("") }
+    var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
     var harga by remember { mutableStateOf("") }
     var barcode by remember { mutableStateOf("") }
     var deskripsi by remember { mutableStateOf("") }
@@ -167,7 +175,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
     var barcodeError by remember { mutableStateOf("") }
     var deskripsiError by remember { mutableStateOf("") }
     var selectedCategoryError by remember { mutableStateOf("") }
-
+    val kategoriList by viewModel.kategoriList.collectAsState()
 
     LaunchedEffect(id) {
         if (id != null) {
@@ -176,7 +184,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                 namaBarang = it.nama_barang
                 jumlah = it.jumlah.toString()
                 harga = it.harga.toString()
-                selectedCategory = it.kategori
+                selectedCategoryId = it.kategoriId
                 barcode = it.barcode
                 deskripsi = it.deskripsi
                 savedPath = it.foto_barang
@@ -275,16 +283,21 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                 }
 
                 DropdownCategory(
-                    selectedCategory = selectedCategory,
-                    onCategorySelected = { selectedCategory = it }
+                    selectedCategoryId = selectedCategoryId,
+                    onCategorySelected = {
+                        selectedCategoryId = it
+                        Log.d("KategoriTerpilih", "Kategori ID: $it")
+                        println("Kategori ID yang dipilih: $it")
+                    },
+                    kategoriList = kategoriList
                 )
+
+
                 if (selectedCategoryError.isNotBlank()) {
                     Text(text = selectedCategoryError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
                 }
             }
         }
-
-
         InputPendek(
             label = stringResource(R.string.barcode),
             placeholder = "Barcode",
@@ -371,7 +384,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                         hargaError = "Harga must be a valid number"
                     }
 
-                    if (selectedCategory.isBlank()) {
+                    if (selectedCategoryId == null) {
                         selectedCategoryError = "Category must be selected"
                     }
 
@@ -387,20 +400,24 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                         imageError = "Image is required"
                     }
 
-                    if (namaBarangError.isBlank() &&
+                    if (
+                        namaBarangError.isBlank() &&
                         jumlahError.isBlank() &&
                         hargaError.isBlank() &&
                         selectedCategoryError.isBlank() &&
                         barcodeError.isBlank() &&
                         deskripsiError.isBlank() &&
-                        imageError.isBlank()
+                        imageError.isBlank() &&
+                        selectedCategoryId != null
                     ) {
+                        val kategoriId: Long = selectedCategoryId!!
+
                         if (id == null) {
                             viewModel.insert(
                                 namaBarang = namaBarang,
                                 jumlah = jumlah.toInt(),
                                 harga = harga.toDouble(),
-                                kategori = selectedCategory,
+                                kategoriId = kategoriId,
                                 barcode = barcode,
                                 deskripsi = deskripsi,
                                 fotoBarang = savedPath
@@ -411,12 +428,13 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                                 namaBarang = namaBarang,
                                 jumlah = jumlah.toInt(),
                                 harga = harga.toDouble(),
-                                kategori = selectedCategory,
+                                kategoriId = kategoriId,
                                 barcode = barcode,
                                 deskripsi = deskripsi,
-                                fotoBarang = savedPath,
+                                fotoBarang = savedPath
                             )
                         }
+
                         navController.popBackStack()
                     }
                 },
@@ -435,6 +453,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
         }
     }
 }
+
 
 
 @Composable
@@ -518,15 +537,15 @@ fun InputPendek(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropdownCategory(
-    selectedCategory: String,
-    onCategorySelected: (String) -> Unit
+    selectedCategoryId: Long?,
+    onCategorySelected: (Long) -> Unit,
+    kategoriList: List<Kategori>
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val categories = listOf("Makanan", "Minuman", "Bahan Nyuci", "Bahan Masak", "Sashetan")
 
-    Column(
-        modifier = Modifier.padding(bottom = 16.dp)
-    ) {
+    val selectedKategori = kategoriList.find { it.id == selectedCategoryId }
+
+    Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
             text = stringResource(R.string.category),
             style = MaterialTheme.typography.bodyMedium,
@@ -539,7 +558,7 @@ fun DropdownCategory(
             onExpandedChange = { expanded = !expanded },
         ) {
             TextField(
-                value = selectedCategory,
+                value = selectedKategori?.nama_kategori ?: "",
                 onValueChange = {},
                 readOnly = true,
                 placeholder = { Text(stringResource(R.string.category), color = Color.Gray) },
@@ -562,11 +581,11 @@ fun DropdownCategory(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                categories.forEach { selectionOption ->
+                kategoriList.forEach { kategori ->
                     DropdownMenuItem(
-                        text = { Text(selectionOption) },
+                        text = { Text(kategori.nama_kategori) },
                         onClick = {
-                            onCategorySelected(selectionOption)
+                            onCategorySelected(kategori.id)
                             expanded = false
                         }
                     )
@@ -602,6 +621,7 @@ fun DeleteAction(delete: () -> Unit) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.N)
 @Preview
 @Composable
 private fun AddItemsPrev() {

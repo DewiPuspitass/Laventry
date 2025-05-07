@@ -1,9 +1,12 @@
 package com.dewipuspitasari0020.laventry.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dewipuspitasari0020.laventry.database.BarangDao
+import com.dewipuspitasari0020.laventry.database.KategoriDao
 import com.dewipuspitasari0020.laventry.model.Barang
+import com.dewipuspitasari0020.laventry.model.Kategori
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -11,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class BarangViewModel (private val dao: BarangDao): ViewModel() {
+class BarangViewModel (private val dao: BarangDao, private val kategoriDao: KategoriDao): ViewModel() {
     private val _outOfStock = MutableStateFlow(0)
     val outOfStock: StateFlow<Int> = _outOfStock
 
@@ -24,19 +27,33 @@ class BarangViewModel (private val dao: BarangDao): ViewModel() {
     val allBarang: StateFlow<List<Barang>> = dao.getBarang()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val kategoriList: StateFlow<List<Kategori>> = kategoriDao.getKategori()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-    fun insert(namaBarang: String, jumlah: Int, harga: Double, kategori: String, barcode: String, deskripsi: String, fotoBarang: String){
+
+    fun insert(
+        namaBarang: String,
+        jumlah: Int,
+        harga: Double,
+        kategoriId: Long,
+        barcode: String,
+        deskripsi: String,
+        fotoBarang: String
+    ) {
         val barang = Barang(
             nama_barang = namaBarang,
             jumlah = jumlah,
             harga = harga,
-            kategori = kategori,
+            kategoriId = kategoriId,
             barcode = barcode,
             deskripsi = deskripsi,
             foto_barang = fotoBarang
         )
-        viewModelScope.launch(Dispatchers.IO){
-            dao.insert(barang)
+        Log.i("DB_INSERT", "insert: $kategoriId")
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val insertedId = dao.insert(barang)
+            Log.d("DB_INSERT", "Barang disisipkan dengan ID: $insertedId")
         }
     }
 
@@ -49,7 +66,7 @@ class BarangViewModel (private val dao: BarangDao): ViewModel() {
         namaBarang: String,
         jumlah: Int,
         harga: Double,
-        kategori: String,
+        kategoriId: Long,
         barcode: String,
         deskripsi: String,
         fotoBarang: String
@@ -60,7 +77,7 @@ class BarangViewModel (private val dao: BarangDao): ViewModel() {
                 nama_barang = namaBarang,
                 jumlah = jumlah,
                 harga = harga,
-                kategori = kategori,
+                kategoriId = kategoriId,
                 barcode = barcode,
                 deskripsi = deskripsi,
                 foto_barang = fotoBarang

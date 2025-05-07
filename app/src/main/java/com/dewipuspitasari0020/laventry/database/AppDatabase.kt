@@ -5,23 +5,26 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.dewipuspitasari0020.laventry.model.Barang
+import com.dewipuspitasari0020.laventry.model.Kategori
 
-@Database(entities = [Barang::class], version = 1, exportSchema = false)
-abstract class BarangDb:RoomDatabase() {
-    abstract val dao: BarangDao
+@Database(entities = [Barang::class, Kategori::class], version = 1, exportSchema = false)
+abstract class AppDatabase:RoomDatabase() {
+
+    abstract val barangDao: BarangDao
+    abstract val kategoriDao: KategoriDao
 
     companion object {
         @Volatile
-        private var INSTANCE: BarangDb? = null
+        private var INSTANCE: AppDatabase? = null
 
-        fun getInstance(context: Context): BarangDb{
+        fun getInstance(context: Context): AppDatabase{
             synchronized(this){
                 var instance = INSTANCE
 
                 if (instance == null){
                     instance = Room.databaseBuilder(
                         context.applicationContext,
-                        BarangDb::class.java,
+                        AppDatabase::class.java,
                         "barang.db"
                     ).build()
                     INSTANCE = instance
