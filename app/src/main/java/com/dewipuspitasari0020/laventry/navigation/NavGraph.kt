@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.dewipuspitasari0020.laventry.SplashScreen1
 import com.dewipuspitasari0020.laventry.ui.screen.AddItemsScreen
 import com.dewipuspitasari0020.laventry.ui.screen.CategoryScreen
 import com.dewipuspitasari0020.laventry.ui.screen.InfoAplikasiScreen
@@ -23,8 +24,11 @@ import com.dewipuspitasari0020.laventry.ui.screen.SettingsScreen
 fun SetupNavGraph(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.SplashScreen.route
     ){
+        composable(route = Screen.SplashScreen.route) {
+            SplashScreen1(navController = navController)
+        }
         composable(route = Screen.Home.route){
             MainScreen(navController)
         }

@@ -14,4 +14,6 @@ sealed class Screen (val route: String){
     data object TambahKategory: Screen("TambahKategoriScreen")
     data object Settings: Screen("SettingsScreen")
     data object InfoAplikasi: Screen("InfoAplikasiScreen")
+    data object SplashScreen: Screen("splashScreen")
+
 }
