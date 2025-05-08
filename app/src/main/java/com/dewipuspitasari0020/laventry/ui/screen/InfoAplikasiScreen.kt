@@ -80,12 +80,12 @@ fun InfoAplikasiScreen(navController: NavHostController) {
     ) { innerPadding ->
         val scrollState = rememberScrollState()
         val listItem = listOf(
-            "Menambahkan barang baru",
-            "Mengupdate barang mulai dari nama, jumlah, harga, dll",
-            "Menghapus data barang",
-            "Menambahkan kategori baru",
-            "Mengupdate nama kategori",
-            "Menghapus kategori",
+            "Menambahkan barang baru.",
+            "Mengupdate barang mulai dari nama, jumlah, harga, dll.",
+            "Menghapus data barang.",
+            "Menambahkan kategori baru.",
+            "Mengupdate nama kategori.",
+            "Menghapus kategori.",
         )
 
         Column (modifier = Modifier.padding(innerPadding).fillMaxSize().verticalScroll(scrollState)){
@@ -121,13 +121,13 @@ fun InfoAplikasiScreen(navController: NavHostController) {
                 }
             }
 
-            Text("Card Out of stock = Menampilkan jumlah barang yang memiliki stok/jumlah 0",
+            Text("Card Out of stock = Menampilkan jumlah barang yang memiliki stok/jumlah 0.",
                 textAlign = TextAlign.Justify, modifier = Modifier.padding(18.dp))
 
-            Text("Card Low stock = Menampilkan jumlah barang yang memiliki stok/jumlah kurang dari 10",
+            Text("Card Low stock = Menampilkan jumlah barang yang memiliki stok/jumlah kurang dari 10.",
                 textAlign = TextAlign.Justify, modifier = Modifier.padding(horizontal = 18.dp))
 
-            Text("Card Total items = Menampilkan total jumlah dari semua barang yang ada",
+            Text("Card Total items = Menampilkan total jumlah dari semua barang yang ada.",
                 textAlign = TextAlign.Justify, modifier = Modifier.padding(18.dp))
         }
     }

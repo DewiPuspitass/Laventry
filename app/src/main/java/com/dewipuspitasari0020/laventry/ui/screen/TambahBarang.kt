@@ -292,7 +292,6 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                     kategoriList = kategoriList
                 )
 
-
                 if (selectedCategoryError.isNotBlank()) {
                     Text(text = selectedCategoryError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
                 }
@@ -302,7 +301,9 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
             label = stringResource(R.string.barcode),
             placeholder = "Barcode",
             value = barcode,
-            onValueChange = { barcode = it },
+            onValueChange = { if (it.length <= 13 && it.all { char -> char.isDigit() }) {
+                barcode = it
+            } },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
         )
         if (barcodeError.isNotBlank()) {
@@ -335,8 +336,10 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
-            singleLine = true
+            singleLine = false,
+            maxLines = 5
         )
+
         if (deskripsiError.isNotBlank()) {
             Text(text = deskripsiError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
         }
@@ -347,21 +350,6 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                 .padding(18.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedButton(
-                onClick = { },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Gray
-                ),
-                border = BorderStroke(1.dp, color = bg)
-            ) {
-                Text("Cancel")
-            }
-
             Button(
                 onClick = {
                     namaBarangError = ""
