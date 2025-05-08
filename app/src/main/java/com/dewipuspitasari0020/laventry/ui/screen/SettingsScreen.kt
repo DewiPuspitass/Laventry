@@ -45,7 +45,7 @@ fun SettingsScreen(navController: NavHostController) {
         else -> -1
     }
     Scaffold(
-        contentColor = bg,
+        containerColor = bg,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -58,7 +58,7 @@ fun SettingsScreen(navController: NavHostController) {
                     bottom = 0.dp
                 ),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = white,
+                    containerColor = bg,
                     titleContentColor = Color.Black,
                     navigationIconContentColor = Color.Black,
                     actionIconContentColor = Color.Black
