@@ -171,7 +171,7 @@ fun DisplayAlertDeleteDialog(
 
 @Preview
 @Composable
-private fun addCategoryPreview() {
+private fun AddCategoryPreview() {
     LaventryTheme {
         DisplayAddCategory(
             onDismissRequest = {},

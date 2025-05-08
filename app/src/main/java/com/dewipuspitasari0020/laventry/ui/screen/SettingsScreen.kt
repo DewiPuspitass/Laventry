@@ -7,9 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -95,13 +94,13 @@ fun ScreenContentSettings(modifier: Modifier = Modifier, navController: NavHostC
             onClick = {
                 navController.navigate(Screen.Profile.route)
             },
-            Label = "Profile"
+            label = "Profile"
         )
         CardInfo(
             onClick = {
                 navController.navigate(Screen.InfoAplikasi.route)
             },
-            Label = "Info Aplikasi"
+            label = "Info Aplikasi"
         )
     }
 }
@@ -110,7 +109,7 @@ fun ScreenContentSettings(modifier: Modifier = Modifier, navController: NavHostC
 fun CardInfo(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    Label: String
+    label: String
 ) {
     Card(
         onClick = onClick,
@@ -126,11 +125,11 @@ fun CardInfo(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.padding(16.dp)) {
-                Text(Label, color = white)
+                Text(label, color = white)
             }
             Row(Modifier.padding(16.dp)) {
                 Icon(
-                    imageVector = Icons.Filled.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Edit",
                     tint = white
                 )
