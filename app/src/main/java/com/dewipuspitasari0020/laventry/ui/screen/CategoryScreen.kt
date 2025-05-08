@@ -63,6 +63,7 @@ fun CategoryScreen(navController: NavHostController) {
         Screen.Home.route -> 0
         Screen.Inventory.route -> 1
         Screen.Kategori.route -> 2
+        Screen.Settings.route -> 3
         else -> -1
     }
     var showDialog by remember { mutableStateOf(false) }
@@ -99,6 +100,7 @@ fun CategoryScreen(navController: NavHostController) {
                         0 -> navController.navigate(Screen.Home.route)
                         1 -> navController.navigate(Screen.Inventory.route)
                         2 -> navController.navigate(Screen.Kategori.route)
+                        3 -> navController.navigate(Screen.Settings.route)
                     }
                 }
             )

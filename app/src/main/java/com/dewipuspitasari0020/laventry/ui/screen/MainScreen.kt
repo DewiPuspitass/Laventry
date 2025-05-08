@@ -68,6 +68,7 @@ fun MainScreen(navController: NavHostController) {
         Screen.Home.route -> 0
         Screen.Inventory.route -> 1
         Screen.Kategori.route -> 2
+        Screen.Settings.route -> 3
         else -> -1
     }
     Scaffold(
@@ -91,7 +92,6 @@ fun MainScreen(navController: NavHostController) {
                             modifier = Modifier.fillMaxSize()
                         )
                     }
-
                 },
                 actions = {
                     Box(
@@ -132,6 +132,7 @@ fun MainScreen(navController: NavHostController) {
                         0 -> navController.navigate(Screen.Home.route)
                         1 -> navController.navigate(Screen.Inventory.route)
                         2 -> navController.navigate(Screen.Kategori.route)
+                        3 -> navController.navigate(Screen.Settings.route)
                     }
                 }
             )
