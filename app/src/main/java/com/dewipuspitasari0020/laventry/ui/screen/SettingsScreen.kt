@@ -66,7 +66,6 @@ fun SettingsScreen(navController: NavHostController) {
                 )
             )
         },
-
         bottomBar = {
             BottomBar(
                 selectedIndex = selectedIndex,
@@ -100,9 +99,9 @@ fun ScreenContentSettings(modifier: Modifier = Modifier, navController: NavHostC
         )
         CardInfo(
             onClick = {
-                navController.navigate(Screen.Profile.route)
+                navController.navigate(Screen.InfoAplikasi.route)
             },
-            Label = "Profile"
+            Label = "Info Aplikasi"
         )
     }
 }
