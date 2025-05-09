@@ -64,6 +64,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -336,6 +337,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
+            textStyle = TextStyle(color = Color.Black),
             singleLine = false,
             maxLines = 5
         )
@@ -516,6 +518,7 @@ fun InputPendek(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
+            textStyle = TextStyle(color = Color.Black),
             keyboardOptions = keyboardOptions,
             singleLine = true
         )
@@ -562,6 +565,7 @@ fun DropdownCategory(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
+                textStyle = TextStyle(color = Color.Black),
                 shape = RoundedCornerShape(50.dp),
             )
 

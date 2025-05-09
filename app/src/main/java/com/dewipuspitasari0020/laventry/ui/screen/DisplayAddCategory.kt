@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,12 +42,12 @@ fun DisplayAddCategory(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = { onConfirmation(text) }) {
-                Text("OK")
+                Text("OK", color = Color.Black)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Batal")
+                Text("Batal", color = Color.Black)
             }
         },
         text = {
@@ -58,7 +59,8 @@ fun DisplayAddCategory(
                     text = stringResource(R.string.add_category),
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 TextField(
@@ -80,6 +82,7 @@ fun DisplayAddCategory(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
+                    textStyle = TextStyle(color = Color.Black),
                     singleLine = true
                 )
             }
@@ -101,12 +104,12 @@ fun DisplayEditCategory(
         confirmButton = {
             val updatedKategori = kategori.copy(nama_kategori = text)
             TextButton(onClick = { onConfirmation(updatedKategori) }) {
-                Text("OK")
+                Text("OK", color = Color.Black)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Batal")
+                Text("Batal", color = Color.Black)
             }
         },
         text = {
@@ -118,7 +121,8 @@ fun DisplayEditCategory(
                     text = stringResource(R.string.edit_category),
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 TextField(
@@ -140,6 +144,7 @@ fun DisplayEditCategory(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
+                    textStyle = TextStyle(color = Color.Black),
                     singleLine = true
                 )
             }
