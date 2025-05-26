@@ -17,3 +17,9 @@ data class KategoriRequest(
     val id: Long,
     val nama_kategori: String
 )
+
+data class KategoriResponse(
+    val status: Boolean,
+    val message: String,
+    val data: List<Kategori>
+)

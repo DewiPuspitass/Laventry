@@ -3,13 +3,8 @@ package com.dewipuspitasari0020.laventry.ui.screen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dewipuspitasari0020.laventry.database.BarangDao
-import com.dewipuspitasari0020.laventry.model.Barang
 import com.dewipuspitasari0020.laventry.network.KategoriApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 //class MainViewModel(dao: BarangDao): ViewModel() {
@@ -29,7 +24,7 @@ class MainViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val result = KategoriApi.service.getKategori()
-                Log.d("MainViewModel", "Success: $result")
+                Log.d("MainViewModel", "Success: $result.data")
             } catch (e: Exception){
                 Log.d("MainViewModel", "Failure: ${e.message}")
             }

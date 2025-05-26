@@ -1,8 +1,10 @@
 package com.dewipuspitasari0020.laventry.network
 
-import com.dewipuspitasari0020.laventry.model.KategoriRequest
+import com.dewipuspitasari0020.laventry.model.KategoriResponse
+import com.squareup.moshi.KotlinJsonAdapterFactory
+import com.squareup.moshi.Moshi
 import retrofit2.Retrofit
-import retrofit2.converter.scalars.ScalarsConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -12,14 +14,18 @@ import retrofit2.http.Path
 
 private const val BASE_URL = "https://laventry-api.kakashispiritnews.my.id" + "/api/"
 
+private val moshi = Moshi.Builder()
+    .add(KotlinJsonAdapterFactory())
+    .build()
+
 private val retrofit = Retrofit.Builder()
-    .addConverterFactory(ScalarsConverterFactory.create())
+    .addConverterFactory(MoshiConverterFactory.create(moshi))
     .baseUrl(BASE_URL)
     .build()
 
 interface KategoriApiService {
     @GET("kategori")
-    suspend fun getKategori(): String
+    suspend fun getKategori(): KategoriResponse
 
     @GET("kategori/{id}")
     suspend fun getShowKategori(
@@ -28,13 +34,13 @@ interface KategoriApiService {
 
     @POST("kategori")
     suspend fun createKategori(
-        @Body kategori: KategoriRequest
+        @Body kategori: KategoriResponse
     ): String
 
     @PUT("kategori/{id}")
     suspend fun updateKategori(
         @Path("id") id: Int,
-        @Body kategori: KategoriRequest
+        @Body kategori: KategoriResponse
     ): String
 
     @DELETE("kategori/{id}")
