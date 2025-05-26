@@ -20,7 +20,7 @@ class ViewModelFactory(
         val barangDao = AppDatabase.getInstance(context).barangDao
         val kategoriDao = AppDatabase.getInstance(context).kategoriDao
         if (modelClass.isAssignableFrom(MainViewModel::class.java)){
-            return MainViewModel(barangDao) as T
+//            return MainViewModel(barangDao) as T
         } else if (modelClass.isAssignableFrom(BarangViewModel::class.java)){
             return BarangViewModel(barangDao, kategoriDao) as T
         }  else if (modelClass.isAssignableFrom(KategoriViewModel::class.java)) {

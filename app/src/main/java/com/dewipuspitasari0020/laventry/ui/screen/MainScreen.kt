@@ -154,6 +154,8 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val lowStock by viewModel.lowStock.collectAsState()
     val totalItems by viewModel.totalItems.collectAsState()
 
+    val viewModel1:MainViewModel = viewModel()
+
     LaunchedEffect(Unit) {
         viewModel.loadSummaryData()
     }

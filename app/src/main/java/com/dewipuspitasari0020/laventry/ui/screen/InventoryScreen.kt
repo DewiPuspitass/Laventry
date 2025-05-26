@@ -62,249 +62,249 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun InventoryScreen(navController: NavHostController) {
-    val dataStore = SettingsDataStore(LocalContext.current)
-    val showList by dataStore.layoutFlow.collectAsState(true)
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun InventoryScreen(navController: NavHostController) {
+//    val dataStore = SettingsDataStore(LocalContext.current)
+//    val showList by dataStore.layoutFlow.collectAsState(true)
+//
+//    val navBackStackEntry by navController.currentBackStackEntryAsState()
+//    val currentRoute = navBackStackEntry?.destination?.route
+//
+//    val selectedIndex = when (currentRoute) {
+//        Screen.Home.route -> 0
+//        Screen.Inventory.route -> 1
+//        Screen.Kategori.route -> 2
+//        Screen.Settings.route -> 3
+//        else -> -1
+//    }
+//    val context = LocalContext.current
+//    val factory = ViewModelFactory(context)
+//    val viewModel: MainViewModel = viewModel(factory = factory)
+//    val data by viewModel.data.collectAsState()
 
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+//    Scaffold(
+//        containerColor = bg,
+//        topBar = {
+//            TopAppBar(
+//                title = {  },
+//                navigationIcon = {
+//                    Box(
+//                        modifier = Modifier
+//                            .size(50.dp)
+//                            .clip(RoundedCornerShape(16.dp))
+//                            .background(Color.White)
+//                            .clickable { },
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Image(
+//                            painter = painterResource(id = R.drawable.fotoprofile),
+//                            contentDescription = "Foto Profil",
+//                            contentScale = ContentScale.Crop,
+//                            modifier = Modifier.fillMaxSize()
+//                        )
+//                    }
+//
+//                },
+//                actions = {
+//                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+//                        Box(
+//                            modifier = Modifier
+//                                .size(50.dp)
+//                                .clip(RoundedCornerShape(18.dp))
+//                                .background(color = white)
+//                                .clickable { navController.navigate(Screen.TambahBarang.route) }
+//                                .padding(8.dp),
+//                            contentAlignment = Alignment.Center
+//                        ) {
+//                            Icon(
+//                                imageVector = Icons.Default.Add,
+//                                contentDescription = "Tambah",
+//                                tint = Color.Black
+//                            )
+//                        }
+//                        Box(
+//                            modifier = Modifier
+//                                .size(50.dp)
+//                                .clip(RoundedCornerShape(18.dp))
+//                                .background(color = white)
+//                                .clickable { CoroutineScope(Dispatchers.IO).launch {
+//                                    dataStore.saveLayout(!showList)
+//                                } }
+//                                .padding(8.dp),
+//                            contentAlignment = Alignment.Center
+//                        ) {
+//                            Icon(
+//                                painter = painterResource(
+//                                    if (showList) R.drawable.baseline_grid_view_24
+//                                    else R.drawable.baseline_view_list_24
+//                                ),
+//                                contentDescription = stringResource(
+//                                    if (showList) R.string.grid
+//                                    else R.string.list
+//                                )
+//                            )
+//                        }
+//                    }
+//                },
+//                modifier = Modifier.padding(
+//                    start = 16.dp,
+//                    top = 16.dp,
+//                    end = 16.dp,
+//                    bottom = 0.dp
+//                ),
+//                colors = TopAppBarDefaults.topAppBarColors(
+//                    containerColor = bg,
+//                    titleContentColor = Color.Black,
+//                    navigationIconContentColor = Color.Black,
+//                    actionIconContentColor = Color.Black
+//                )
+//            )
+//        },
+//        bottomBar = {
+//            BottomBar(
+//                selectedIndex = selectedIndex,
+//                onItemSelected = { index ->
+//                    when (index) {
+//                        0 -> navController.navigate(Screen.Home.route)
+//                        1 -> navController.navigate(Screen.Inventory.route)
+//                        2 -> navController.navigate(Screen.Kategori.route)
+//                        3 -> navController.navigate(Screen.Settings.route)
+//                    }
+//                }
+//            )
+//        }
+//    ) { innerPadding ->
+//        Column(
+//            modifier = Modifier
+//                .padding(innerPadding)
+//                .padding(16.dp)
+//        ) {
+//            if (data.isEmpty()) {
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(16.dp),
+//                    verticalArrangement = Arrangement.Center,
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Text(text = stringResource(R.string.list_kosong))
+//                }
+//            } else {
+//                if (showList) {
+//                    LazyColumn(
+//                        verticalArrangement = Arrangement.spacedBy(16.dp)
+//                    ) {
+//                        items(data) { barang ->
+//                            val imagePath = barang.foto_barang
+//
+//                            CardBarang(
+//                                label = barang.nama_barang,
+//                                stock = barang.jumlah,
+//                                barcode = barang.barcode,
+//                                harga = barang.harga,
+//                                image = imagePath,
+//                                onClick = {
+//                                    navController.navigate(Screen.EditBarang.withId(barang.id))
+//                                }
+//                            )
+//                        }
+//                    }
+//                }else{
+//                    LazyVerticalStaggeredGrid(
+//                        modifier = Modifier.fillMaxSize(),
+//                        columns = StaggeredGridCells.Fixed(2),
+//                        verticalItemSpacing = 8.dp,
+//                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                        contentPadding = PaddingValues(8.dp, 8.dp, 8.dp, 84.dp)
+//                    ) {
+//                        items(data){
+//                            GridItem(barang = it) {
+//                                navController.navigate(Screen.EditBarang.withId(it.id))
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
-    val selectedIndex = when (currentRoute) {
-        Screen.Home.route -> 0
-        Screen.Inventory.route -> 1
-        Screen.Kategori.route -> 2
-        Screen.Settings.route -> 3
-        else -> -1
-    }
-    val context = LocalContext.current
-    val factory = ViewModelFactory(context)
-    val viewModel: MainViewModel = viewModel(factory = factory)
-    val data by viewModel.data.collectAsState()
+//@Composable
+//fun GridItem(barang: Barang, onClick: () -> Unit) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clickable { onClick() },
+//        colors = CardDefaults.cardColors(containerColor = white),
+//        shape = RoundedCornerShape(16.dp),
+//        elevation = CardDefaults.cardElevation(4.dp)
+//    ) {
+//        Column(
+//            modifier = Modifier.padding(12.dp),
+//            verticalArrangement = Arrangement.spacedBy(12.dp)
+//        ) {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(120.dp)
+//                    .clip(RoundedCornerShape(16.dp))
+//                    .background(color = bg),
+//                contentAlignment = Alignment.Center
+//            ) {
+//                val imageFile = File(barang.foto_barang)
+//                val painter = rememberAsyncImagePainter(imageFile)
+//                Image(
+//                    painter = painter,
+//                    contentDescription = "Gambar Barang",
+//                    modifier = Modifier.fillMaxSize(),
+//                    contentScale = ContentScale.Crop
+//                )
+//            }
+//
+//            Column(
+//                verticalArrangement = Arrangement.spacedBy(4.dp),
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Text(
+//                    text = barang.nama_barang,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp
+//                )
+//                Text(
+//                    text = "Barcode: ${barang.barcode}",
+//                    fontSize = 12.sp,
+//                    color = Color.Gray
+//                )
+//                Text(
+//                    text = "Harga: Rp ${barang.harga}",
+//                    fontSize = 14.sp,
+//                    fontWeight = FontWeight.Medium
+//                )
+//            }
+//
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.End
+//            ) {
+//                Text(
+//                    text = "Stok: ${barang.jumlah}",
+//                    fontSize = 12.sp,
+//                    fontWeight = FontWeight.SemiBold,
+//                    color = Color.White,
+//                    modifier = Modifier
+//                        .background(Color(0xFF4CAF50), RoundedCornerShape(12.dp))
+//                        .padding(horizontal = 8.dp, vertical = 4.dp)
+//                )
+//            }
+//        }
+//    }
+//}
 
-    Scaffold(
-        containerColor = bg,
-        topBar = {
-            TopAppBar(
-                title = {  },
-                navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White)
-                            .clickable { },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.fotoprofile),
-                            contentDescription = "Foto Profil",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                },
-                actions = {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(color = white)
-                                .clickable { navController.navigate(Screen.TambahBarang.route) }
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Tambah",
-                                tint = Color.Black
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(color = white)
-                                .clickable { CoroutineScope(Dispatchers.IO).launch {
-                                    dataStore.saveLayout(!showList)
-                                } }
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    if (showList) R.drawable.baseline_grid_view_24
-                                    else R.drawable.baseline_view_list_24
-                                ),
-                                contentDescription = stringResource(
-                                    if (showList) R.string.grid
-                                    else R.string.list
-                                )
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier.padding(
-                    start = 16.dp,
-                    top = 16.dp,
-                    end = 16.dp,
-                    bottom = 0.dp
-                ),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = bg,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black,
-                    actionIconContentColor = Color.Black
-                )
-            )
-        },
-        bottomBar = {
-            BottomBar(
-                selectedIndex = selectedIndex,
-                onItemSelected = { index ->
-                    when (index) {
-                        0 -> navController.navigate(Screen.Home.route)
-                        1 -> navController.navigate(Screen.Inventory.route)
-                        2 -> navController.navigate(Screen.Kategori.route)
-                        3 -> navController.navigate(Screen.Settings.route)
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            if (data.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = stringResource(R.string.list_kosong))
-                }
-            } else {
-                if (showList) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(data) { barang ->
-                            val imagePath = barang.foto_barang
-
-                            CardBarang(
-                                label = barang.nama_barang,
-                                stock = barang.jumlah,
-                                barcode = barang.barcode,
-                                harga = barang.harga,
-                                image = imagePath,
-                                onClick = {
-                                    navController.navigate(Screen.EditBarang.withId(barang.id))
-                                }
-                            )
-                        }
-                    }
-                }else{
-                    LazyVerticalStaggeredGrid(
-                        modifier = Modifier.fillMaxSize(),
-                        columns = StaggeredGridCells.Fixed(2),
-                        verticalItemSpacing = 8.dp,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(8.dp, 8.dp, 8.dp, 84.dp)
-                    ) {
-                        items(data){
-                            GridItem(barang = it) {
-                                navController.navigate(Screen.EditBarang.withId(it.id))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun GridItem(barang: Barang, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = white),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(color = bg),
-                contentAlignment = Alignment.Center
-            ) {
-                val imageFile = File(barang.foto_barang)
-                val painter = rememberAsyncImagePainter(imageFile)
-                Image(
-                    painter = painter,
-                    contentDescription = "Gambar Barang",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = barang.nama_barang,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "Barcode: ${barang.barcode}",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-                Text(
-                    text = "Harga: Rp ${barang.harga}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(
-                    text = "Stok: ${barang.jumlah}",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                    modifier = Modifier
-                        .background(Color(0xFF4CAF50), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun InventoryPreview() {
-    LaventryTheme {
-        InventoryScreen(rememberNavController())
-    }
-}
+//@Preview
+//@Composable
+//private fun InventoryPreview() {
+//    LaventryTheme {
+//        InventoryScreen(rememberNavController())
+//    }
+//}
