@@ -3,6 +3,7 @@ package com.dewipuspitasari0020.laventry.ui.screen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dewipuspitasari0020.laventry.network.BarangApi
 import com.dewipuspitasari0020.laventry.network.KategoriApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +25,9 @@ class MainViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val result = KategoriApi.service.getKategori()
+                val result2 = BarangApi.service.getBarang()
                 Log.d("MainViewModel", "Success: $result.data")
+                Log.d("MainViewModel", "Success: $result2.data")
             } catch (e: Exception){
                 Log.d("MainViewModel", "Failure: ${e.message}")
             }

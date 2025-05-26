@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.squareup.moshi.Json
 
 @Entity(
     tableName = "barang",
@@ -23,6 +24,7 @@ data class Barang(
     val nama_barang: String,
     val jumlah: Int,
     val harga: Double,
+    @Json(name = "kategori_id")
     @ColumnInfo(name = "kategoriId")
     val kategoriId: Long,
     val barcode: String,
@@ -30,3 +32,8 @@ data class Barang(
     val foto_barang: String
 )
 
+data class BarangResponse(
+    val status: Boolean,
+    val message: String,
+    val data: List<Barang>
+)

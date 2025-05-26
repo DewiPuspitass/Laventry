@@ -1,5 +1,6 @@
 package com.dewipuspitasari0020.laventry.network
 
+import com.dewipuspitasari0020.laventry.model.BarangResponse
 import com.dewipuspitasari0020.laventry.model.KategoriResponse
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
@@ -49,8 +50,40 @@ interface KategoriApiService {
     ): String
 }
 
+interface BarangApiService {
+    @GET("barang")
+    suspend fun getBarang(): BarangResponse
+
+    @GET("barang/{id}")
+    suspend fun getShowBarang(
+        @Path("id") id: Long
+    ): String
+
+    @POST("barang")
+    suspend fun createBarang(
+        @Body kategori: KategoriResponse
+    ): String
+
+    @PUT("barang/{id}")
+    suspend fun updateBarang(
+        @Path("id") id: Int,
+        @Body kategori: KategoriResponse
+    ): String
+
+    @DELETE("barang/{id}")
+    suspend fun deleteBarang(
+        @Path("id") id: Int
+    ): String
+}
+
 object KategoriApi {
     val service: KategoriApiService by lazy {
         retrofit.create(KategoriApiService::class.java)
+    }
+}
+
+object BarangApi {
+    val service: BarangApiService by lazy {
+        retrofit.create(BarangApiService::class.java)
     }
 }
