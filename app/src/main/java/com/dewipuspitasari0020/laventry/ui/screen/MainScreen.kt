@@ -51,6 +51,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.navigation.Screen
+import com.dewipuspitasari0020.laventry.network.BarangApi
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
@@ -148,13 +149,14 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: BarangViewModel = viewModel(factory = factory)
-    val data by viewModel.allBarang.collectAsState()
+//    val data by viewModel.allBarang.collectAsState()
 
     val outOfStock by viewModel.outOfStock.collectAsState()
     val lowStock by viewModel.lowStock.collectAsState()
     val totalItems by viewModel.totalItems.collectAsState()
 
     val viewModel1:MainViewModel = viewModel()
+    val apiData by viewModel1.data
 
     LaunchedEffect(Unit) {
         viewModel.loadSummaryData()
@@ -195,7 +197,7 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                 Text("View All")
             }
         }
-        if (data.isEmpty()) {
+        if (apiData.isEmpty()) {
             Column(
                 modifier = modifier
                     .fillMaxSize()
@@ -209,8 +211,8 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(data) { barang ->
-                    val imagePath = barang.foto_barang
+                items(apiData) { barang ->
+                    val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
 
                     CardBarang(
                         label = barang.nama_barang,
@@ -286,7 +288,6 @@ fun CardBarang(
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = white),
-//        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
             modifier = Modifier
@@ -300,8 +301,7 @@ fun CardBarang(
                     .background(color = bg),
                 contentAlignment = Alignment.Center
             ) {
-                val imageFile = File(image)
-                val painter = rememberAsyncImagePainter(imageFile)
+                val painter = rememberAsyncImagePainter(model = image)
                 Image(
                     painter = painter,
                     contentDescription = "Gambar Barang",

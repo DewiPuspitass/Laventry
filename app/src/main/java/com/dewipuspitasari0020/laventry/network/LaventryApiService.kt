@@ -1,6 +1,8 @@
 package com.dewipuspitasari0020.laventry.network
 
+import com.dewipuspitasari0020.laventry.model.Barang
 import com.dewipuspitasari0020.laventry.model.BarangResponse
+import com.dewipuspitasari0020.laventry.model.Kategori
 import com.dewipuspitasari0020.laventry.model.KategoriResponse
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
@@ -14,6 +16,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 private const val BASE_URL = "https://laventry-api.kakashispiritnews.my.id" + "/api/"
+private const val BASE_IMAGE_URL = "https://laventry-api.kakashispiritnews.my.id/images/"
 
 private val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
@@ -26,7 +29,7 @@ private val retrofit = Retrofit.Builder()
 
 interface KategoriApiService {
     @GET("kategori")
-    suspend fun getKategori(): KategoriResponse
+    suspend fun getKategori(): List<Kategori>
 
     @GET("kategori/{id}")
     suspend fun getShowKategori(
@@ -61,13 +64,13 @@ interface BarangApiService {
 
     @POST("barang")
     suspend fun createBarang(
-        @Body kategori: KategoriResponse
+        @Body barang: BarangResponse
     ): String
 
     @PUT("barang/{id}")
     suspend fun updateBarang(
         @Path("id") id: Int,
-        @Body kategori: KategoriResponse
+        @Body barang: BarangResponse
     ): String
 
     @DELETE("barang/{id}")
@@ -85,5 +88,9 @@ object KategoriApi {
 object BarangApi {
     val service: BarangApiService by lazy {
         retrofit.create(BarangApiService::class.java)
+    }
+
+    fun getGambarUrl(foto_barang: String): String {
+        return "$BASE_IMAGE_URL$foto_barang"
     }
 }

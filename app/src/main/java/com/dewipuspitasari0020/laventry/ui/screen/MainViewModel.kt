@@ -1,10 +1,11 @@
 package com.dewipuspitasari0020.laventry.ui.screen
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dewipuspitasari0020.laventry.model.Barang
 import com.dewipuspitasari0020.laventry.network.BarangApi
-import com.dewipuspitasari0020.laventry.network.KategoriApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -17,6 +18,9 @@ import kotlinx.coroutines.launch
 //}
 
 class MainViewModel: ViewModel() {
+    var data = mutableStateOf(emptyList<Barang>())
+        private set
+
     init {
         retrieveData()
     }
@@ -24,10 +28,7 @@ class MainViewModel: ViewModel() {
     private fun retrieveData(){
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val result = KategoriApi.service.getKategori()
-                val result2 = BarangApi.service.getBarang()
-                Log.d("MainViewModel", "Success: $result.data")
-                Log.d("MainViewModel", "Success: $result2.data")
+                data.value = BarangApi.service.getBarang().data
             } catch (e: Exception){
                 Log.d("MainViewModel", "Failure: ${e.message}")
             }

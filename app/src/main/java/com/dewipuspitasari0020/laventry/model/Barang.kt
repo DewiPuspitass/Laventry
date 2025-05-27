@@ -21,6 +21,7 @@ import com.squareup.moshi.Json
 data class Barang(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
+    @Json(name = "nama_barang")
     val nama_barang: String,
     val jumlah: Int,
     val harga: Double,
@@ -34,6 +35,5 @@ data class Barang(
 
 data class BarangResponse(
     val status: Boolean,
-    val message: String,
     val data: List<Barang>
 )
