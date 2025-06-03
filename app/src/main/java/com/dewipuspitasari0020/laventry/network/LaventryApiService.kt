@@ -2,10 +2,13 @@ package com.dewipuspitasari0020.laventry.network
 
 import com.dewipuspitasari0020.laventry.model.Barang
 import com.dewipuspitasari0020.laventry.model.BarangResponse
+import com.dewipuspitasari0020.laventry.model.BaseResponse
 import com.dewipuspitasari0020.laventry.model.Kategori
+import com.dewipuspitasari0020.laventry.model.KategoriRequest
 import com.dewipuspitasari0020.laventry.model.KategoriResponse
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
+import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
@@ -29,29 +32,30 @@ private val retrofit = Retrofit.Builder()
 
 interface KategoriApiService {
     @GET("kategori")
-    suspend fun getKategori(): List<Kategori>
+    suspend fun getKategori(): KategoriResponse
 
     @GET("kategori/{id}")
     suspend fun getShowKategori(
         @Path("id") id: Long
-    ): String
+    ): KategoriResponse
 
-    @POST("kategori")
+    @POST("kategori/tambah")
     suspend fun createKategori(
-        @Body kategori: KategoriResponse
-    ): String
+        @Body request: KategoriRequest
+    ): BaseResponse
 
     @PUT("kategori/{id}")
     suspend fun updateKategori(
         @Path("id") id: Int,
-        @Body kategori: KategoriResponse
-    ): String
+        @Body request: KategoriRequest
+    ): BaseResponse
 
     @DELETE("kategori/{id}")
     suspend fun deleteKategori(
         @Path("id") id: Int
-    ): String
+    ): BaseResponse
 }
+
 
 interface BarangApiService {
     @GET("barang")

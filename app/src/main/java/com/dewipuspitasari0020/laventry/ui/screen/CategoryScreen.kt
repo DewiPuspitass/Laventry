@@ -1,5 +1,6 @@
 package com.dewipuspitasari0020.laventry.ui.screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +71,13 @@ fun CategoryScreen(navController: NavHostController) {
     val factory = ViewModelFactory(context)
     val viewModel: KategoriViewModel = viewModel(factory = factory)
     val data by viewModel.allKategori.collectAsState()
+
+    val viewModel1:MainViewModel = viewModel()
+    val apiData by viewModel1.dataKategori
+
+    val kategoriSuccess by viewModel1.kategoriSuccess
+    val kategoriError by viewModel1.kategoriError
+
     Scaffold(
         containerColor = bg,
         topBar = {
@@ -131,8 +140,22 @@ fun CategoryScreen(navController: NavHostController) {
                 }
             }else{
                 LazyColumn{
-                    items(data) { kategori ->
+                    items(apiData) { kategori ->
                         CardCategory(kategori = kategori)
+                    }
+                }
+                if (kategoriSuccess) {
+                    LaunchedEffect(Unit) {
+                        Toast.makeText(context, "Kategori berhasil ditambahkan", Toast.LENGTH_SHORT).show()
+                        viewModel1.clearKategoriStatus()
+                    }
+                }
+
+                kategoriError?.let {
+                    LaunchedEffect(it) {
+                        Toast.makeText(context, "Gagal: $it", Toast.LENGTH_SHORT).show()
+                        viewModel1.clearKategoriStatus()
+                        Log.d("KategoriError", "Gagal: $it")
                     }
                 }
             }
@@ -142,7 +165,7 @@ fun CategoryScreen(navController: NavHostController) {
                     onDismissRequest = { showDialog = false },
                     onConfirmation = { inputText ->
                         if (inputText.isNotBlank()) {
-                            viewModel.insert(namaKategori = inputText)
+                            viewModel1.createKategori(inputText)
                             showDialog = false
                         } else {
                             Toast.makeText(context, "Kategori tidak boleh kosong", Toast.LENGTH_SHORT).show()
@@ -153,6 +176,7 @@ fun CategoryScreen(navController: NavHostController) {
         }
     }
 }
+
 @Composable
 fun CardCategory(kategori: Kategori) {
     val context = LocalContext.current
@@ -161,6 +185,7 @@ fun CardCategory(kategori: Kategori) {
     var showDialogEdit by remember { mutableStateOf(false) }
     var showDialogDelete by remember { mutableStateOf(false) }
 
+    val viewModel1:MainViewModel = viewModel()
 
     if (showDialogEdit) {
         DisplayEditCategory(
@@ -168,7 +193,7 @@ fun CardCategory(kategori: Kategori) {
             onDismissRequest = { showDialogEdit = false },
             onConfirmation = { updatedKategori ->
                 if (updatedKategori.nama_kategori.isNotBlank()) {
-                    viewModel.update(
+                    viewModel1.updateKategori(
                         id = updatedKategori.id,
                         namaKategori = updatedKategori.nama_kategori
                     )
@@ -188,7 +213,7 @@ fun CardCategory(kategori: Kategori) {
                     if (isUsed) {
                         Toast.makeText(context, "Kategori sedang digunakan, tidak bisa dihapus", Toast.LENGTH_SHORT).show()
                     } else {
-                        viewModel.delete(kategori.id)
+                        viewModel1.deleteKategori(kategori.id)
                         Toast.makeText(context, "Kategori dihapus", Toast.LENGTH_SHORT).show()
                     }
                     showDialogDelete = false

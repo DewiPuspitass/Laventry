@@ -156,7 +156,7 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val totalItems by viewModel.totalItems.collectAsState()
 
     val viewModel1:MainViewModel = viewModel()
-    val apiData by viewModel1.data
+    val apiData by viewModel1.dataBarang
 
     LaunchedEffect(Unit) {
         viewModel.loadSummaryData()
