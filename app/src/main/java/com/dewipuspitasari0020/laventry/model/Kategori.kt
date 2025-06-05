@@ -12,3 +12,9 @@ data class Kategori(
     val id:Long = 0L,
     val nama_kategori: String
 )
+
+data class KategoriResponse(
+    val status: Boolean,
+    val message: String,
+    val data: List<Kategori>
+)
