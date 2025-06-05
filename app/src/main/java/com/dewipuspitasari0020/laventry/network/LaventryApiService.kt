@@ -66,4 +66,8 @@ object BarangApi {
     val service: BarangApiService by lazy {
         retrofit.create(BarangApiService::class.java)
     }
+
+    fun getGambarUrl(foto_barang: String): String {
+        return "$BASE_IMAGE_URL$foto_barang"
+    }
 }
