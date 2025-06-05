@@ -3,22 +3,69 @@ package com.dewipuspitasari0020.laventry.viewModel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dewipuspitasari0020.laventry.model.Kategori
 import com.dewipuspitasari0020.laventry.network.KategoriApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class KategoriViewModelApi: ViewModel() {
+    private val _data = MutableStateFlow<List<Kategori>>(emptyList())
+    val data: StateFlow<List<Kategori>> = _data
+
     init {
-        retriveData()
+        retrieveData()
     }
 
-    private fun retriveData() {
+    private fun retrieveData() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val result = KategoriApi.service.getKategori()
-                Log.d("KategoriViewModelApi", "Success: $result")
-            } catch (e: Exception){
-                Log.d("KategoriViewModelApi", "Failure: ${e.message}")
+                val response = KategoriApi.service.getKategori()
+                if (response.status) {
+                    _data.value = response.data
+                } else {
+                    _data.value = emptyList()
+                }
+            } catch (e: Exception) {
+                Log.e("KategoriViewModelApi", "Failure: ${e.message}")
+                _data.value = emptyList()
+            }
+        }
+    }
+
+    fun insert(namaKategori: String) {
+        viewModelScope.launch {
+            try {
+                val response = KategoriApi.service.insertKategori(namaKategori)
+                retrieveData()
+            } catch (e: Exception) {
+                Log.e("KategoriViewModelApi", "Insert failed: ${e.message}")
+            }
+        }
+    }
+
+    fun updateKategori(updatedKategori: Kategori) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                KategoriApi.service.updateKategori(
+                    id = updatedKategori.id,
+                    kategori = mapOf("nama_kategori" to updatedKategori.nama_kategori)
+                )
+                retrieveData()
+            } catch (e: Exception) {
+                Log.e("KategoriViewModelApi", "Update failed: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteKategori(id: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                KategoriApi.service.deleteKategori(id)
+                retrieveData()
+            } catch (e: Exception) {
+                Log.e("KategoriViewModelApi", "Delete failed: ${e.message}")
             }
         }
     }

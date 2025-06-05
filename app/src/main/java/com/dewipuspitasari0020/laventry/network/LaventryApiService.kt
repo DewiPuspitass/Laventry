@@ -1,14 +1,20 @@
 package com.dewipuspitasari0020.laventry.network
 
-import com.dewipuspitasari0020.laventry.model.Barang
 import com.dewipuspitasari0020.laventry.model.BarangResponse
-import com.dewipuspitasari0020.laventry.model.Kategori
 import com.dewipuspitasari0020.laventry.model.KategoriResponse
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
+import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 private const val BASE_URL = "https://laventry-api.kakashispiritnews.my.id" + "/api/"
 private const val BASE_IMAGE_URL = "https://laventry-api.kakashispiritnews.my.id/images/"
@@ -25,6 +31,23 @@ private val retrofit = Retrofit.Builder()
 interface KategoriApiService {
     @GET("kategori")
     suspend fun getKategori(): KategoriResponse
+
+    @POST("kategori/tambah")
+    @FormUrlEncoded
+    suspend fun insertKategori(
+        @Field("nama_kategori") namaKategori: String
+    ): ResponseBody
+
+    @PUT("kategori/{id}")
+    suspend fun updateKategori(
+        @Path("id") id: Long,
+        @Body kategori: Map<String, String>
+    ): ResponseBody
+
+    @DELETE("kategori/{id}")
+    suspend fun deleteKategori(
+        @Path("id") id: Long
+    ): ResponseBody
 }
 
 

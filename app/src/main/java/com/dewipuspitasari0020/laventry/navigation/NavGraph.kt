@@ -11,13 +11,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dewipuspitasari0020.laventry.SplashScreen1
 import com.dewipuspitasari0020.laventry.ui.screen.AddItemsScreen
-import com.dewipuspitasari0020.laventry.ui.screen.CategoryScreen
 import com.dewipuspitasari0020.laventry.ui.screen.InfoAplikasiScreen
 import com.dewipuspitasari0020.laventry.ui.screen.InventoryScreen
 import com.dewipuspitasari0020.laventry.ui.screen.KEY_ID_BARANG
 import com.dewipuspitasari0020.laventry.ui.screen.MainScreen
 import com.dewipuspitasari0020.laventry.ui.screen.ProfileScreen
 import com.dewipuspitasari0020.laventry.ui.screen.SettingsScreen
+import com.dewipuspitasari0020.laventry.ui.screenApi.CategoryScreenApi
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
@@ -51,7 +51,7 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()) {
             ProfileScreen(navController)
         }
         composable(route = Screen.Kategori.route) {
-            CategoryScreen(navController)
+            CategoryScreenApi(navController)
         }
         composable(route = Screen.Settings.route) {
             SettingsScreen(navController)
