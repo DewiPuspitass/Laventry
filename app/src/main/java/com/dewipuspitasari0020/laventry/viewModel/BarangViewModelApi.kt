@@ -38,18 +38,15 @@ class BarangViewModelApi: ViewModel() {
         }
     }
 
-    fun retriveDataById(id: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val response = BarangApi.service.getBarang()
-                if (response.status) {
-                    _data.value = response.data
-                } else {
-                    _data.value = emptyList()
-                }
-            } catch (e: Exception){
-                Log.d("BarangViewModelApi", "Failure: ${e.message}")
-            }
+    suspend fun retrieveBarangById(id: Long): Barang? {
+        return try {
+            val response = BarangApi.service.getBarang()
+            if (response.status) {
+                response.data.find { it.id == id }
+            } else null
+        } catch (e: Exception) {
+            Log.d("BarangViewModelApi", "Failure: ${e.message}")
+            null
         }
     }
 
@@ -82,6 +79,44 @@ class BarangViewModelApi: ViewModel() {
                     val errorBody = response.errorBody()?.string()
                     Log.e("InsertBarang", "Error upload: $errorBody")
                     Log.e("InsertBarang", "Insert failed: ${response.code()} ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("InsertBarang", "Exception: ${e.message}")
+            }
+        }
+    }
+
+    fun updateBarang(
+        id: Long,
+        namaBarang: String,
+        jumlah: Int,
+        harga: Double,
+        kategoriId: Long,
+        barcode: String,
+        deskripsi: String,
+        fotoBitmap: Bitmap
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val requestImage = fotoBitmap.toMultipartImagePart("foto_barang")
+
+                val response = BarangApi.service.updateBarang(
+                    id = id,
+                    namaBarang.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    jumlah.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
+                    harga.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
+                    kategoriId.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
+                    barcode.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    deskripsi.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    requestImage
+                )
+
+                if (response.isSuccessful) {
+                    retriveData()
+                    Log.i("UpdateBarang", "Update berhasil!")
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("UpdateBarang", "Gagal update: $errorBody")
                 }
             } catch (e: Exception) {
                 Log.e("InsertBarang", "Exception: ${e.message}")

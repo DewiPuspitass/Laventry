@@ -77,6 +77,19 @@ interface BarangApiService {
         @Part("id") id: Long
     ): BarangResponse
 
+    @PUT("barang/{id}")
+    suspend fun updateBarang(
+        @Path("id") id: Long,
+        @Part("nama_barang") namaBarang: RequestBody,
+        @Part("jumlah") jumlah: RequestBody,
+        @Part("harga") harga: RequestBody,
+        @Part("kategori_id") kategoriId: RequestBody,
+        @Part("barcode") barcode: RequestBody,
+        @Part("deskripsi") deskripsi: RequestBody,
+        @Part fotoBarang: MultipartBody.Part? = null
+    ): Response<ResponseBody>
+
+
     @DELETE("barang/{id}")
     suspend fun deleteBarang(
         @Path("id") id: Long

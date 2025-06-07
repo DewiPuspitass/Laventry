@@ -43,7 +43,7 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()) {
             )
         ){ navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getLong(KEY_ID_BARANG)
-            AddItemsScreen(navController, id)
+            AddItemsScreen2(navController, id)
         }
         composable(route = Screen.Inventory.route) {
             InventoryScreen(navController)

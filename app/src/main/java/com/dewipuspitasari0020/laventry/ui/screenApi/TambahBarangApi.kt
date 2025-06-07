@@ -2,6 +2,7 @@ package com.dewipuspitasari0020.laventry.ui.screenApi
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import com.dewipuspitasari0020.laventry.ui.screen.DisplayAlertDialog
 import android.net.Uri
@@ -56,6 +57,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,15 +78,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.model.Kategori
+import com.dewipuspitasari0020.laventry.network.BarangApi.getGambarUrl
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
-import com.dewipuspitasari0020.laventry.util.ViewModelFactory
 import com.dewipuspitasari0020.laventry.util.saveImageToInternalStorage
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
 import com.dewipuspitasari0020.laventry.viewModel.KategoriViewModelApi
+import java.net.HttpURLConnection
+import java.net.URL
 
 const val KEY_ID_BARANG = "id"
 
@@ -94,7 +99,6 @@ const val KEY_ID_BARANG = "id"
 fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val factory = ViewModelFactory(context)
     val viewModel: BarangViewModelApi = viewModel()
 
     Scaffold(
@@ -165,11 +169,10 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
     val context = LocalContext.current
 
     val viewModel: BarangViewModelApi = viewModel()
-
     val viewModel1: KategoriViewModelApi = viewModel()
     val kategoriList by viewModel1.data.collectAsState(initial = emptyList())
 
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var savedPath by remember { mutableStateOf("") }
     var imageError by remember { mutableStateOf("") }
 
@@ -191,33 +194,28 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
         viewModel1.retrieveData()
     }
 
-
-//    LaunchedEffect(id) {
-//        if (id != null) {
-//            val barang = viewModel.getBarang(id)
-//            barang?.let {
-//                namaBarang = it.nama_barang
-//                jumlah = it.jumlah.toString()
-//                harga = it.harga.toString()
-//                selectedCategoryId = it.kategoriId
-//                barcode = it.barcode
-//                deskripsi = it.deskripsi
-//                savedPath = it.foto_barang
-//                imageUri = Uri.parse(it.foto_barang)
-//            }
-//        }
-//    }
+    LaunchedEffect(id) {
+        if (id != null) {
+            val barang = viewModel.retrieveBarangById(id)
+            barang?.let {
+                namaBarang = it.nama_barang
+                jumlah = it.jumlah.toString()
+                harga = it.harga.toString()
+                selectedCategoryId = it.kategoriId
+                barcode = it.barcode
+                deskripsi = it.deskripsi
+                savedPath = it.foto_barang
+                imageUri = Uri.parse(getGambarUrl(it.foto_barang))
+            }
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
             imageUri = it
-            val path = saveImageToInternalStorage(context, it)
-            if (path != null) {
-                savedPath = path
-                imageError = ""
-            }
+            imageError = ""
         }
     }
 
@@ -237,8 +235,8 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
             contentAlignment = Alignment.Center
         ) {
             if (imageUri != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = imageUri),
+                AsyncImage(
+                    model = imageUri.toString(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -400,7 +398,7 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                         deskripsiError = "Deskripsi is required"
                     }
 
-                    if (savedPath.isBlank()) {
+                    if (imageUri == null) {
                         imageError = "Image is required"
                     }
 
@@ -418,33 +416,37 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
 
                         imageUri?.let {
                             val bitmap = uriToBitmap(context, it)
-                            if (id == null) {
-                                viewModel.insertBarang(
-                                    namaBarang = namaBarang,
-                                    jumlah = jumlah.toInt(),
-                                    harga = harga.toDouble(),
-                                    kategoriId = kategoriId,
-                                    barcode = barcode,
-                                    deskripsi = deskripsi,
-                                    fotoBitmap = bitmap
-                                )
+                            if (bitmap != null) {
+                                if (id == null) {
+                                    viewModel.insertBarang(
+                                        namaBarang = namaBarang,
+                                        jumlah = jumlah.toInt(),
+                                        harga = harga.toDouble(),
+                                        kategoriId = kategoriId,
+                                        barcode = barcode,
+                                        deskripsi = deskripsi,
+                                        fotoBitmap = bitmap
+                                    )
+                                } else {
+                                    viewModel.updateBarang(
+                                        id = id,
+                                        namaBarang = namaBarang,
+                                        jumlah = jumlah.toInt(),
+                                        harga = harga.toDouble(),
+                                        kategoriId = kategoriId,
+                                        barcode = barcode,
+                                        deskripsi = deskripsi,
+                                        fotoBitmap = bitmap
+                                    )
+                                }
+                                navController.popBackStack()
+                            } else {
+                                imageError = "Gagal memproses gambar"
                             }
-//                        } else {
-//                            viewModel.update(
-//                                id = id,
-//                                namaBarang = namaBarang,
-//                                jumlah = jumlah.toInt(),
-//                                harga = harga.toDouble(),
-//                                kategoriId = kategoriId,
-//                                barcode = barcode,
-//                                deskripsi = deskripsi,
-//                                fotoBarang = savedPath
-//                            )
-//                        }
-                            navController.popBackStack()
-                        } ?: run {
+                    } ?: run {
                             Log.e("InputError", "Gambar null")
                         }
+                        navController.popBackStack()
                     }
                 },
                 modifier = Modifier
@@ -458,20 +460,32 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
             ) {
                 Text("Save")
             }
-
         }
     }
 }
 
-fun uriToBitmap(context: Context, uri: Uri): Bitmap {
-    return if (Build.VERSION.SDK_INT < 28) {
-        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-    } else {
-        val source = ImageDecoder.createSource(context.contentResolver, uri)
-        ImageDecoder.decodeBitmap(source)
+fun uriToBitmap(context: Context, uri: Uri): Bitmap? {
+    return try {
+        when {
+            uri.scheme == "content" || uri.scheme == "file" -> {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                BitmapFactory.decodeStream(inputStream)
+            }
+            uri.scheme == "http" || uri.scheme == "https" -> {
+                val url = URL(uri.toString())
+                val connection = url.openConnection() as HttpURLConnection
+                connection.doInput = true
+                connection.connect()
+                val inputStream = connection.inputStream
+                BitmapFactory.decodeStream(inputStream)
+            }
+            else -> null
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }
-
 
 @Composable
 fun DottedBorderBox(
