@@ -4,7 +4,10 @@ import com.dewipuspitasari0020.laventry.model.BarangResponse
 import com.dewipuspitasari0020.laventry.model.KategoriResponse
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
@@ -12,8 +15,10 @@ import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 private const val BASE_URL = "https://laventry-api.kakashispiritnews.my.id" + "/api/"
@@ -54,6 +59,28 @@ interface KategoriApiService {
 interface BarangApiService {
     @GET("barang")
     suspend fun getBarang(): BarangResponse
+
+    @Multipart
+    @POST("barang/tambah")
+    suspend fun insertBarang(
+        @Part("nama_barang") namaBarang: RequestBody,
+        @Part("jumlah") jumlah: RequestBody,
+        @Part("harga") harga: RequestBody,
+        @Part("kategori_id") kategoriId: RequestBody,
+        @Part("barcode") barcode: RequestBody,
+        @Part("deskripsi") deskripsi: RequestBody,
+        @Part fotoBarang: MultipartBody.Part
+    ): Response<ResponseBody>
+
+    @GET("barang/{id}")
+    suspend fun getBarangById(
+        @Part("id") id: Long
+    ): BarangResponse
+
+    @DELETE("barang/{id}")
+    suspend fun deleteBarang(
+        @Path("id") id: Long
+    ): ResponseBody
 }
 
 object KategoriApi {

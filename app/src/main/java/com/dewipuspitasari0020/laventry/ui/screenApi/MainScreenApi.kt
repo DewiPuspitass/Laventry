@@ -1,5 +1,6 @@
 package com.dewipuspitasari0020.laventry.ui.screenApi
 
+import android.util.Log
 import com.dewipuspitasari0020.laventry.ui.screen.BottomBar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -213,6 +214,7 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                         image = imagePath,
                         onClick = {
                             navController.navigate(Screen.EditBarang.withId(barang.id))
+                            Log.d("MainScreen", "Berhasil masuk ke edit")
                         }
                     )
                 }

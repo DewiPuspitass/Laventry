@@ -18,7 +18,7 @@ class KategoriViewModelApi: ViewModel() {
         retrieveData()
     }
 
-    private fun retrieveData() {
+    fun retrieveData() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = KategoriApi.service.getKategori()

@@ -37,3 +37,4 @@ data class BarangResponse(
     val message: String,
     val data: List<Barang>
 )
+
