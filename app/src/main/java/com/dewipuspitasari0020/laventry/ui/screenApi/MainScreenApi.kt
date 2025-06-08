@@ -56,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.dewipuspitasari0020.laventry.BuildConfig
@@ -109,18 +110,32 @@ fun MainScreenApi(navController: NavHostController) {
                                         signIn(context, datastore)
                                     }
                                 } else {
+                                    navController.navigate(Screen.Profile.route)
                                   Log.d("SIGN-IN", "User: $user")
                                 }
 
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.account_circle),
-                            contentDescription = "Foto Profil",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        if (user.photoUrl.isNotEmpty()) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(user.photoUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = "Foto Profil",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Image(
+                                painter = painterResource(id = R.drawable.account_circle),
+                                contentDescription = "Foto Profil",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
                     }
                 },
                 actions = {
