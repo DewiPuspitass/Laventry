@@ -1,5 +1,6 @@
 package com.dewipuspitasari0020.laventry.ui.screenApi
 
+import android.content.Context
 import android.util.Log
 import com.dewipuspitasari0020.laventry.ui.screen.BottomBar
 import androidx.compose.foundation.Image
@@ -46,25 +47,43 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.dewipuspitasari0020.laventry.BuildConfig
 import com.dewipuspitasari0020.laventry.R
+import com.dewipuspitasari0020.laventry.model.User
 import com.dewipuspitasari0020.laventry.navigation.Screen
 import com.dewipuspitasari0020.laventry.network.BarangApi
+import com.dewipuspitasari0020.laventry.network.UserDataStore
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenApi(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val context = LocalContext.current
+    val datastore = UserDataStore(context)
+    val user by datastore.userFlow.collectAsState(User())
 
     val selectedIndex = when (currentRoute) {
         Screen.Home.route -> 0
@@ -84,11 +103,20 @@ fun MainScreenApi(navController: NavHostController) {
                             .size(50.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
-                            .clickable { navController.navigate(Screen.Profile.route) },
+                            .clickable {
+                                if (user.email.isEmpty()){
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        signIn(context, datastore)
+                                    }
+                                } else {
+                                  Log.d("SIGN-IN", "User: $user")
+                                }
+
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.fotoprofile),
+                            painter = painterResource(id = R.drawable.account_circle),
                             contentDescription = "Foto Profil",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
@@ -351,7 +379,41 @@ fun CardBarang(
     }
 }
 
+private suspend fun signIn(context: Context, dataStore: UserDataStore) {
+    val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+        .setFilterByAuthorizedAccounts(false)
+        .setServerClientId(BuildConfig.API_KEY)
+        .build()
 
+    val request: GetCredentialRequest = GetCredentialRequest.Builder()
+        .addCredentialOption(googleIdOption)
+        .build()
+
+    try {
+        val credentialManager = CredentialManager.create(context)
+        val result = credentialManager.getCredential(context, request)
+        handleSignIn(result, dataStore)
+    } catch (e: GetCredentialException){
+        Log.e("SIGN-IN", "Error: ${e.message}")
+    }
+}
+
+private suspend fun handleSignIn(result: GetCredentialResponse, dataStore: UserDataStore) {
+    val credential = result.credential
+    if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL){
+        try {
+            val googleId = GoogleIdTokenCredential.createFrom(credential.data)
+            val nama = googleId.displayName ?: ""
+            val email = googleId.id
+            val photoUrl = googleId.profilePictureUri.toString()
+            dataStore.saveData(User(nama, email, photoUrl))
+        } catch (e: GoogleIdTokenParsingException){
+            Log.e("SIGN-IN", "Error: ${e.message}")
+        }
+    }else{
+        Log.e("SIGN-IN", "Error: unrecognized custom credential type.")
+    }
+}
 
 @Preview
 @Composable
