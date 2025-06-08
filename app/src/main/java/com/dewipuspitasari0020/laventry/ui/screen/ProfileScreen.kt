@@ -1,5 +1,7 @@
 package com.dewipuspitasari0020.laventry.ui.screen
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,6 +29,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,23 +42,33 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.exceptions.ClearCredentialException
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.model.User
+import com.dewipuspitasari0020.laventry.navigation.Screen
 import com.dewipuspitasari0020.laventry.network.UserDataStore
+import com.dewipuspitasari0020.laventry.ui.screenApi.LogoutDialog
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavHostController,) {
+fun ProfileScreen(navController: NavHostController) {
     val context = LocalContext.current
     val datastore = UserDataStore(context)
     val user by datastore.userFlow.collectAsState(User())
+
+    var showDialog by remember { mutableStateOf(false) }
     Scaffold(
         containerColor = bg,
         topBar = {
@@ -152,28 +169,38 @@ fun ProfileScreen(navController: NavHostController,) {
                     Text(text = user.email)
                 }
             }
-//            Row (
-//                modifier = Modifier
-//                    .padding(horizontal = 16.dp)
-//                    .fillMaxWidth()
-//                    .background(white, shape = RoundedCornerShape(8.dp))
-//                    .clip(RoundedCornerShape(16.dp)),
-//            ){
-//                Column (
-//                    modifier = Modifier.padding(16.dp)
-//                ){
-//                    Icon(
-//                        imageVector = Icons.Outlined.LocationOn,
-//                        contentDescription = stringResource(R.string.icon_class)
-//                    )
-//                }
-//                Column(
-//                    modifier = Modifier.padding(16.dp)
-//                ) {
-//                    Text(text = stringResource(R.string.developer_class))
-//                }
-//            }
+            Button(
+                onClick = { showDialog = true },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(text = stringResource(R.string.logout))
+            }
+
+            if (showDialog) {
+                LogoutDialog(
+                    user = user,
+                    onDismissRequest = { showDialog = false }) {
+                    CoroutineScope(Dispatchers.IO).launch { signOut(context, datastore) }
+                    showDialog = false
+                    navController.navigate(Screen.Home.route)
+                }
+            }
         }
+    }
+}
+
+private suspend fun signOut(context: Context, dataStore: UserDataStore){
+    try{
+        val credentialManager = CredentialManager.create(context)
+        credentialManager.clearCredentialState(
+            ClearCredentialStateRequest()
+        )
+        dataStore.saveData(User())
+    } catch (e: ClearCredentialException){
+        Log.e("SIGN-IN", "Error: ${e.message}")
     }
 }
 

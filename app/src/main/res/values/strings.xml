@@ -37,4 +37,7 @@
     <string name="delete_category">Delete Category</string>
     <string name="category_cannot_null">Categories cannot be empty</string>
     <string name="theres_no_category">There are no categories at this time</string>
+    <string name="logout_confirm">Are you sure you want to logout?</string>
+    <string name="close">Close</string>
+    <string name="logout" translatable="false">Logout</string>
 </resources>

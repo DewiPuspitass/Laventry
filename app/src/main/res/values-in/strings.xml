@@ -30,4 +30,11 @@
     <string name="icon_info">Ikon Info</string>
     <string name="icon_class">Ikon Kelas</string>
     <string name="add_category">Tambah Kategori</string>
+    <string name="edit_category">Edit Kategori</string>
+    <string name="info_category">"Kategori sedang digunakan, tidak dapat dihapus "</string>
+    <string name="delete_category">Hapus Kategori</string>
+    <string name="category_cannot_null">Kategori tidak boleh kosong</string>
+    <string name="theres_no_category">Tidak ada kategori saat ini</string>
+    <string name="logout_confirm">Apakah kamu yakin ingin logout?</string>
+    <string name="close">Tutup</string>
 </resources>
