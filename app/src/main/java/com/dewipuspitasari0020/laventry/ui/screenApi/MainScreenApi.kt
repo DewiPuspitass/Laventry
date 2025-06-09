@@ -125,7 +125,9 @@ fun MainScreenApi(navController: NavHostController) {
                                     .build(),
                                 contentDescription = "Foto Profil",
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize(),
+                                placeholder = painterResource(id = R.drawable.loading_img),
+                                error = painterResource(id = R.drawable.broken_image)
                             )
                         } else {
                             Image(
