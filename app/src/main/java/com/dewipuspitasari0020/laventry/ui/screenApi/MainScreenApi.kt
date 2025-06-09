@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,8 +23,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -63,6 +66,7 @@ import com.dewipuspitasari0020.laventry.BuildConfig
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.model.User
 import com.dewipuspitasari0020.laventry.navigation.Screen
+import com.dewipuspitasari0020.laventry.network.ApiStatus
 import com.dewipuspitasari0020.laventry.network.BarangApi
 import com.dewipuspitasari0020.laventry.network.UserDataStore
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
@@ -195,6 +199,8 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val viewModel:BarangViewModelApi = viewModel()
     val data by viewModel.data.collectAsState(initial = emptyList())
 
+    val status by viewModel.status.collectAsState()
+
     LaunchedEffect(Unit) {
         viewModel.retriveData()
     }
@@ -234,34 +240,62 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                 Text("View All")
             }
         }
-        if (data.isEmpty()) {
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = stringResource(R.string.list_kosong))
+        when (status) {
+            ApiStatus.LOADING -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ){
+                    CircularProgressIndicator()
+                }
             }
-        }else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(data) { barang ->
-                    val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
+            ApiStatus.SUCCESS -> {
+                if (data.isEmpty()) {
+                    Column(
+                        modifier = modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = stringResource(R.string.list_kosong))
+                    }
+                }else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(data) { barang ->
+                            val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
 
-                    CardBarang(
-                        label = barang.nama_barang,
-                        stock = barang.jumlah,
-                        barcode = barang.barcode,
-                        harga = barang.harga,
-                        image = imagePath,
-                        onClick = {
-                            navController.navigate(Screen.EditBarang.withId(barang.id))
-                            Log.d("MainScreen", "Berhasil masuk ke edit")
+                            CardBarang(
+                                label = barang.nama_barang,
+                                stock = barang.jumlah,
+                                barcode = barang.barcode,
+                                harga = barang.harga,
+                                image = imagePath,
+                                onClick = {
+                                    navController.navigate(Screen.EditBarang.withId(barang.id))
+                                    Log.d("MainScreen", "Berhasil masuk ke edit")
+                                }
+                            )
                         }
-                    )
+                    }
+                }
+            }
+            ApiStatus.FAILED -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = stringResource(id = R.string.error))
+                    Button(
+                        onClick = { viewModel.retriveData() },
+                        modifier = Modifier.padding(top = 16.dp),
+                        contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+                    ) {
+                        Text(text = stringResource(R.string.try_again))
+                    }
                 }
             }
         }

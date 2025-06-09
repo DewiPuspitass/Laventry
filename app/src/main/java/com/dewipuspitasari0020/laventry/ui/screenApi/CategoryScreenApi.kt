@@ -7,7 +7,9 @@ import com.dewipuspitasari0020.laventry.ui.screen.DisplayEditCategory
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,8 +22,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -54,7 +58,7 @@ import com.dewipuspitasari0020.laventry.ui.theme.blue
 import com.dewipuspitasari0020.laventry.ui.theme.white
 import com.dewipuspitasari0020.laventry.viewModel.KategoriViewModelApi
 import androidx.compose.runtime.collectAsState
-
+import com.dewipuspitasari0020.laventry.network.ApiStatus
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,6 +76,8 @@ fun CategoryScreenApi(navController: NavHostController) {
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val viewModel: KategoriViewModelApi = viewModel()
+
+    val status by viewModel.status.collectAsState()
 
     val data by viewModel.data.collectAsState(initial = emptyList())
 
@@ -115,35 +121,69 @@ fun CategoryScreenApi(navController: NavHostController) {
             }
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            if (data.isEmpty()) {
+        when (status) {
+            ApiStatus.LOADING -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            ApiStatus.SUCCESS -> {
+                Column(modifier = Modifier.padding(innerPadding)) {
+                    if (data.isEmpty()) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Tidak ada kategori saat ini")
+                        }
+                    } else {
+                        LazyColumn {
+                            items(data) { kategori ->
+                                CardCategory(kategori = kategori, viewModel = viewModel)
+                            }
+                        }
+                    }
+
+                    if (showDialog) {
+                        DisplayAddCategory(
+                            onDismissRequest = { showDialog = false },
+                            onConfirmation = { inputText ->
+                                if (inputText.isNotBlank()) {
+                                    viewModel.insert(namaKategori = inputText)
+                                    showDialog = false
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Kategori tidak boleh kosong",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            ApiStatus.FAILED -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Tidak ada kategori saat ini")
-                }
-            } else {
-                LazyColumn {
-                    items(data) { kategori ->
-                        CardCategory(kategori = kategori, viewModel = viewModel)
+                    Text(text = stringResource(id = R.string.error))
+                    Button(
+                        onClick = { viewModel.retrieveData() },
+                        modifier = Modifier.padding(top = 16.dp),
+                        contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+                    ) {
+                        Text(text = stringResource(R.string.try_again))
                     }
                 }
-            }
-
-            if (showDialog) {
-                DisplayAddCategory(
-                    onDismissRequest = { showDialog = false },
-                    onConfirmation = { inputText ->
-                        if (inputText.isNotBlank()) {
-                            viewModel.insert(namaKategori = inputText)
-                            showDialog = false
-                        } else {
-                            Toast.makeText(context, "Kategori tidak boleh kosong", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                )
             }
         }
     }

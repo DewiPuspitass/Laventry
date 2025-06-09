@@ -40,4 +40,6 @@
     <string name="logout_confirm">Are you sure you want to logout?</string>
     <string name="close">Close</string>
     <string name="logout" translatable="false">Logout</string>
+    <string name="error">Failed to load data.. Connection error.</string>
+    <string name="try_again">Try again</string>
 </resources>

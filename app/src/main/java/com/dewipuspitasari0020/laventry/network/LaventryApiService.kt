@@ -111,3 +111,5 @@ object BarangApi {
         return "$BASE_IMAGE_URL$foto_barang"
     }
 }
+
+enum class ApiStatus { LOADING, SUCCESS, FAILED}

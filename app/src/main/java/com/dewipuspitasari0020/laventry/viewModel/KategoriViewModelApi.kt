@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dewipuspitasari0020.laventry.model.Kategori
+import com.dewipuspitasari0020.laventry.network.ApiStatus
 import com.dewipuspitasari0020.laventry.network.KategoriApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,12 +15,16 @@ class KategoriViewModelApi: ViewModel() {
     private val _data = MutableStateFlow<List<Kategori>>(emptyList())
     val data: StateFlow<List<Kategori>> = _data
 
+    var status = MutableStateFlow(ApiStatus.LOADING)
+        private set
+
     init {
         retrieveData()
     }
 
     fun retrieveData() {
         viewModelScope.launch(Dispatchers.IO) {
+            status.value = ApiStatus.LOADING
             try {
                 val response = KategoriApi.service.getKategori()
                 if (response.status) {
@@ -27,9 +32,11 @@ class KategoriViewModelApi: ViewModel() {
                 } else {
                     _data.value = emptyList()
                 }
+                status.value = ApiStatus.SUCCESS
             } catch (e: Exception) {
                 Log.e("KategoriViewModelApi", "Failure: ${e.message}")
                 _data.value = emptyList()
+                status.value = ApiStatus.FAILED
             }
         }
     }
