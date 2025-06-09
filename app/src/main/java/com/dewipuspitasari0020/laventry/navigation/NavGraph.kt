@@ -10,10 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dewipuspitasari0020.laventry.SplashScreen1
-import com.dewipuspitasari0020.laventry.model.User
-import com.dewipuspitasari0020.laventry.ui.screen.AddItemsScreen
 import com.dewipuspitasari0020.laventry.ui.screen.InfoAplikasiScreen
-import com.dewipuspitasari0020.laventry.ui.screen.InventoryScreen
 import com.dewipuspitasari0020.laventry.ui.screen.KEY_ID_BARANG
 import com.dewipuspitasari0020.laventry.ui.screen.ProfileScreen
 import com.dewipuspitasari0020.laventry.ui.screen.SettingsScreen

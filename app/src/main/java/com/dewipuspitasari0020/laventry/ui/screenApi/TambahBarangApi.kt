@@ -3,17 +3,14 @@ package com.dewipuspitasari0020.laventry.ui.screenApi
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
 import com.dewipuspitasari0020.laventry.ui.screen.DisplayAlertDialog
 import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -80,13 +77,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.model.Kategori
 import com.dewipuspitasari0020.laventry.network.BarangApi.getGambarUrl
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
-import com.dewipuspitasari0020.laventry.util.saveImageToInternalStorage
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
 import com.dewipuspitasari0020.laventry.viewModel.KategoriViewModelApi
 import java.net.HttpURLConnection
@@ -99,7 +94,6 @@ const val KEY_ID_BARANG = "id"
 @Composable
 fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
     var showDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     val viewModel: BarangViewModelApi = viewModel()
 
     Scaffold(

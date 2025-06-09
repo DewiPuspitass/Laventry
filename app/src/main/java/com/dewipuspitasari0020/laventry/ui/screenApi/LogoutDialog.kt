@@ -18,10 +18,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.dewipuspitasari0020.laventry.R
-import com.dewipuspitasari0020.laventry.model.User
 
 @Composable
-fun LogoutDialog(user: User, onDismissRequest: () -> Unit, onConfirmation: () -> Unit) {
+fun LogoutDialog(onDismissRequest: () -> Unit, onConfirmation: () -> Unit) {
     Dialog(
         onDismissRequest = { onDismissRequest() }
     ) {

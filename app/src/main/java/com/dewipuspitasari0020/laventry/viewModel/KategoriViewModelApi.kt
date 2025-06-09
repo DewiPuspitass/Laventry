@@ -44,7 +44,7 @@ class KategoriViewModelApi: ViewModel() {
     fun insert(namaKategori: String) {
         viewModelScope.launch {
             try {
-                val response = KategoriApi.service.insertKategori(namaKategori)
+                KategoriApi.service.insertKategori(namaKategori)
                 retrieveData()
             } catch (e: Exception) {
                 Log.e("KategoriViewModelApi", "Insert failed: ${e.message}")
