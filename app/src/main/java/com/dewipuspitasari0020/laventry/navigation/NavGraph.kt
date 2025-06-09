@@ -19,6 +19,7 @@ import com.dewipuspitasari0020.laventry.ui.screen.ProfileScreen
 import com.dewipuspitasari0020.laventry.ui.screen.SettingsScreen
 import com.dewipuspitasari0020.laventry.ui.screenApi.AddItemsScreen2
 import com.dewipuspitasari0020.laventry.ui.screenApi.CategoryScreenApi
+import com.dewipuspitasari0020.laventry.ui.screenApi.InventoryScreenApi
 import com.dewipuspitasari0020.laventry.ui.screenApi.MainScreenApi
 
 @RequiresApi(Build.VERSION_CODES.N)
@@ -47,7 +48,7 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()) {
             AddItemsScreen2(navController, id)
         }
         composable(route = Screen.Inventory.route) {
-            InventoryScreen(navController)
+            InventoryScreenApi(navController)
         }
         composable(route = Screen.Profile.route) {
             ProfileScreen(navController)

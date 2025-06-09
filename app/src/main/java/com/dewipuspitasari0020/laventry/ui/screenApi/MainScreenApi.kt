@@ -430,7 +430,7 @@ fun CardBarang(
     }
 }
 
-private suspend fun signIn(context: Context, dataStore: UserDataStore) {
+suspend fun signIn(context: Context, dataStore: UserDataStore) {
     val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(false)
         .setServerClientId(BuildConfig.API_KEY)
