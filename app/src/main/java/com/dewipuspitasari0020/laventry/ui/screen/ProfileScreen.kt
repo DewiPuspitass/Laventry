@@ -184,7 +184,6 @@ fun ProfileScreen(navController: NavHostController) {
 
             if (showDialog) {
                 LogoutDialog(
-                    user = user,
                     onDismissRequest = { showDialog = false }) {
                     CoroutineScope(Dispatchers.IO).launch { signOut(context, datastore) }
                     showDialog = false

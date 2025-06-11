@@ -6,7 +6,9 @@ import android.graphics.BitmapFactory
 import com.dewipuspitasari0020.laventry.ui.screen.DisplayAlertDialog
 import android.net.Uri
 import android.os.Build
+import android.provider.OpenableColumns
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -79,7 +81,10 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.dewipuspitasari0020.laventry.R
 import com.dewipuspitasari0020.laventry.model.Kategori
+import com.dewipuspitasari0020.laventry.model.User
+import com.dewipuspitasari0020.laventry.network.ApiStatus
 import com.dewipuspitasari0020.laventry.network.BarangApi.getGambarUrl
+import com.dewipuspitasari0020.laventry.network.UserDataStore
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
@@ -95,7 +100,6 @@ const val KEY_ID_BARANG = "id"
 fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
     var showDialog by remember { mutableStateOf(false) }
     val viewModel: BarangViewModelApi = viewModel()
-
     Scaffold(
         containerColor = bg,
         topBar = {
@@ -143,7 +147,7 @@ fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
             )
         }
     ) { innerPadding ->
-        AddItems(modifier = Modifier.padding(innerPadding), id = id, navController = navController)
+        AddItems(viewModel, modifier = Modifier.padding(innerPadding), id = id, navController = navController)
         if(id != null && showDialog){
             DisplayAlertDialog(
                 onDismissRequest = { showDialog = false }) {
@@ -160,10 +164,8 @@ fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
-fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: NavHostController) {
+fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: Long? = null, navController: NavHostController) {
     val context = LocalContext.current
-
-    val viewModel: BarangViewModelApi = viewModel()
     val viewModel1: KategoriViewModelApi = viewModel()
     val kategoriList by viewModel1.data.collectAsState(initial = emptyList())
 
@@ -184,14 +186,32 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
     var barcodeError by remember { mutableStateOf("") }
     var deskripsiError by remember { mutableStateOf("") }
     var selectedCategoryError by remember { mutableStateOf("") }
+    val status by viewModel.status.collectAsState()
+
+    val errorMessage = viewModel.errorMessage.value
+
+    val datastore = UserDataStore(context)
+    val user by datastore.userFlow.collectAsState(User())
 
     LaunchedEffect(Unit) {
         viewModel1.retrieveData()
     }
 
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrBlank()) {
+            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            viewModel.clearErrorMessage()
+        }
+    }
+
+    LaunchedEffect(status) {
+        if (status == ApiStatus.SUCCESS)
+            navController.popBackStack()
+    }
+
     LaunchedEffect(id) {
         if (id != null) {
-            val barang = viewModel.retrieveBarangById(id)
+            val barang = viewModel.retrieveBarangById(id, user.email)
             barang?.let {
                 namaBarang = it.nama_barang
                 jumlah = it.jumlah.toString()
@@ -209,10 +229,20 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            imageUri = it
-            imageError = ""
+            val maxSizeInBytes = 15 * 1024 * 1024
+            val fileSize = getFileSizeFromUri(context, it)
+
+            if (fileSize > maxSizeInBytes) {
+                Toast.makeText(context, "Ukuran gambar terlalu besar (maks 2MB)", Toast.LENGTH_LONG).show()
+                imageUri = null
+                imageError = "Ukuran gambar terlalu besar"
+            } else {
+                imageUri = it
+                imageError = ""
+            }
         }
     }
+
 
     Column(
         modifier = modifier
@@ -415,7 +445,9 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                             val bitmap = uriToBitmap(context, it)
                             if (bitmap != null) {
                                 if (id == null) {
+                                    Log.d("InsertBarang", "User ID: ${user.email}")
                                     viewModel.insertBarang(
+                                        userId = user.email,
                                         namaBarang = namaBarang,
                                         jumlah = jumlah.toInt(),
                                         harga = harga.toDouble(),
@@ -436,14 +468,12 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
                                         fotoBitmap = bitmap
                                     )
                                 }
-                                navController.popBackStack()
                             } else {
                                 imageError = "Gagal memproses gambar"
                             }
                     } ?: run {
                             Log.e("InputError", "Gambar null")
                         }
-                        navController.popBackStack()
                     }
                 },
                 modifier = Modifier
@@ -460,6 +490,16 @@ fun AddItems(modifier: Modifier = Modifier, id: Long? = null, navController: Nav
         }
     }
 }
+
+fun getFileSizeFromUri(context: Context, uri: Uri): Long {
+    val cursor = context.contentResolver.query(uri, null, null, null, null)
+    return cursor?.use {
+        val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
+        it.moveToFirst()
+        it.getLong(sizeIndex)
+    } ?: 0L
+}
+
 
 fun uriToBitmap(context: Context, uri: Uri): Bitmap? {
     return try {

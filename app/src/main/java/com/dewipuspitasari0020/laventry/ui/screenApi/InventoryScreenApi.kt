@@ -95,9 +95,10 @@ fun InventoryScreenApi(navController: NavHostController) {
 
     val status by viewModel.status.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.retriveData()
+    LaunchedEffect(user.email) {
+        viewModel.retriveData(user.email)
     }
+
     Scaffold(
         containerColor = bg,
         topBar = {
@@ -287,7 +288,7 @@ fun InventoryScreenApi(navController: NavHostController) {
                 ) {
                     Text(text = stringResource(id = R.string.error))
                     Button(
-                        onClick = { viewModel.retriveData() },
+                        onClick = { viewModel.retriveData(user.email) },
                         modifier = Modifier.padding(top = 16.dp),
                         contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
                     ) {

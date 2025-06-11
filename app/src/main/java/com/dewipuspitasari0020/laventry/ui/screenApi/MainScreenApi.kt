@@ -189,20 +189,20 @@ fun MainScreenApi(navController: NavHostController) {
             )
         }
     ) { innerPadding ->
-        ScreenContent(Modifier.padding(innerPadding), navController = navController)
+        ScreenContent(Modifier.padding(innerPadding), user.email, navController = navController)
     }
 }
 
 
 @Composable
-fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostController) {
+fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: NavHostController) {
     val viewModel:BarangViewModelApi = viewModel()
     val data by viewModel.data.collectAsState(initial = emptyList())
 
     val status by viewModel.status.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.retriveData()
+    LaunchedEffect(userId) {
+        viewModel.retriveData(userId)
     }
 
     Column(
@@ -290,7 +290,7 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                 ) {
                     Text(text = stringResource(id = R.string.error))
                     Button(
-                        onClick = { viewModel.retriveData() },
+                        onClick = { viewModel.retriveData(userId) },
                         modifier = Modifier.padding(top = 16.dp),
                         contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
                     ) {

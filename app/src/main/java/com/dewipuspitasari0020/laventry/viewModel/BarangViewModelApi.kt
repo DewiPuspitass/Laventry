@@ -2,6 +2,7 @@ package com.dewipuspitasari0020.laventry.viewModel
 
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dewipuspitasari0020.laventry.model.Barang
@@ -23,15 +24,18 @@ class BarangViewModelApi: ViewModel() {
     var status = MutableStateFlow(ApiStatus.LOADING)
         private set
 
-    init {
-        retriveData()
+    var errorMessage = mutableStateOf<String?>(null)
+        private set
+
+    fun clearErrorMessage() {
+        errorMessage.value = null
     }
 
-    fun retriveData() {
+    fun retriveData(userId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             status.value = ApiStatus.LOADING
             try {
-                val response = BarangApi.service.getBarang()
+                val response = BarangApi.service.getBarang(userId)
                 if (response.status) {
                     _data.value = response.data
                 } else {
@@ -45,9 +49,9 @@ class BarangViewModelApi: ViewModel() {
         }
     }
 
-    suspend fun retrieveBarangById(id: Long): Barang? {
+    suspend fun retrieveBarangById(id: Long, userId: String): Barang? {
         return try {
-            val response = BarangApi.service.getBarang()
+            val response = BarangApi.service.getBarang(userId)
             if (response.status) {
                 response.data.find { it.id == id }
             } else null
@@ -58,6 +62,7 @@ class BarangViewModelApi: ViewModel() {
     }
 
     fun insertBarang(
+        userId: String,
         namaBarang: String,
         jumlah: Int,
         harga: Double,
@@ -71,6 +76,7 @@ class BarangViewModelApi: ViewModel() {
                 val requestImage = fotoBitmap.toMultipartImagePart("foto_barang")
 
                 val response = BarangApi.service.insertBarang(
+                    userId,
                     namaBarang.toRequestBody("text/plain".toMediaTypeOrNull()),
                     jumlah.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
                     harga.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
@@ -81,14 +87,21 @@ class BarangViewModelApi: ViewModel() {
                 )
 
                 if (response.isSuccessful) {
-                    retriveData()
+                    retriveData(userId)
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("InsertBarang", "Error upload: $errorBody")
-                    Log.e("InsertBarang", "Insert failed: ${response.code()} ${response.message()}")
+                    if (response.code() == 413){
+                        errorMessage.value = "File Image terlalu besar."
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        errorMessage.value = "Gagal menyimpan barang. ${response.message()}"
+                        Log.e("InsertBarang", "Error upload: $errorBody")
+                    }
                 }
+                status.value = ApiStatus.SUCCESS
             } catch (e: Exception) {
                 Log.e("InsertBarang", "Exception: ${e.message}")
+                errorMessage.value = "Error: ${e.message}"
+                status.value = ApiStatus.FAILED
             }
         }
     }
@@ -119,7 +132,7 @@ class BarangViewModelApi: ViewModel() {
                 )
 
                 if (response.isSuccessful) {
-                    retriveData()
+//                    retriveData(userId)
                     Log.i("UpdateBarang", "Update berhasil!")
                 } else {
                     val errorBody = response.errorBody()?.string()
@@ -145,7 +158,7 @@ class BarangViewModelApi: ViewModel() {
             try {
                 BarangApi.service.deleteBarang(id)
                 Log.e("BarangViewModelApi", "Delete success")
-                retriveData()
+//                retriveData(userId)
             } catch (e: Exception) {
                 Log.e("BarangViewModelApi", "Delete failed: ${e.message}")
             }

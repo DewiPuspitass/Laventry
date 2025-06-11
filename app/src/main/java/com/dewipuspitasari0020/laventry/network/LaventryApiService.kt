@@ -15,6 +15,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -58,11 +59,14 @@ interface KategoriApiService {
 
 interface BarangApiService {
     @GET("barang")
-    suspend fun getBarang(): BarangResponse
+    suspend fun getBarang(
+        @Header("User-Id") userId: String
+    ): BarangResponse
 
     @Multipart
     @POST("barang/tambah")
     suspend fun insertBarang(
+        @Header("User-Id") userId: String,
         @Part("nama_barang") namaBarang: RequestBody,
         @Part("jumlah") jumlah: RequestBody,
         @Part("harga") harga: RequestBody,
