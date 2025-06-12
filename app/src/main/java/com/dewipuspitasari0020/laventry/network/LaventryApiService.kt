@@ -119,8 +119,8 @@ object BarangApi {
         retrofit.create(BarangApiService::class.java)
     }
 
-    fun getGambarUrl(foto_barang: String): String {
-        return "$BASE_IMAGE_URL$foto_barang"
+    fun getGambarUrl(fotobarang: String): String {
+        return "$BASE_IMAGE_URL$fotobarang"
     }
 }
 

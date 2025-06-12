@@ -162,7 +162,7 @@ class BarangViewModelApi: ViewModel() {
         }
     }
 
-    fun Bitmap.toMultipartImagePart(fieldName: String): MultipartBody.Part {
+    private fun Bitmap.toMultipartImagePart(fieldName: String): MultipartBody.Part {
         val bos = ByteArrayOutputStream()
         this.compress(Bitmap.CompressFormat.JPEG, 100, bos)
         val reqFile = bos.toByteArray()
@@ -173,7 +173,6 @@ class BarangViewModelApi: ViewModel() {
 
     fun deleteBarang(userId: String, id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Status diubah jadi LOADING, ini sudah benar.
             status.value = ApiStatus.LOADING
             try {
                 val response = BarangApi.service.deleteBarang(userId, id)
