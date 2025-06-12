@@ -34,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,7 +61,6 @@ import com.dewipuspitasari0020.laventry.viewModel.KategoriViewModelApi
 import androidx.compose.runtime.collectAsState
 import com.dewipuspitasari0020.laventry.network.ApiStatus
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreenApi(navController: NavHostController) {
@@ -80,6 +80,14 @@ fun CategoryScreenApi(navController: NavHostController) {
     val status by viewModel.status.collectAsState()
 
     val data by viewModel.data.collectAsState(initial = emptyList())
+    val errorMsg by viewModel.errorMessage
+
+    LaunchedEffect(errorMsg) {
+        errorMsg?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            viewModel.clearErrorMessage()
+        }
+    }
 
     Scaffold(
         containerColor = bg,
@@ -215,7 +223,6 @@ fun CardCategory(kategori: Kategori, viewModel: KategoriViewModelApi) {
             onDismissRequest = { showDialogDelete = false },
             onConfirmation = {
                 viewModel.deleteKategori(kategori.id)
-                Toast.makeText(context, "Kategori dihapus", Toast.LENGTH_SHORT).show()
                 showDialogDelete = false
             }
         )

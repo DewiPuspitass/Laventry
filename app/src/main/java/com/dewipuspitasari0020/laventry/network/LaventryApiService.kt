@@ -55,9 +55,7 @@ interface KategoriApiService {
     ): ResponseBody
 
     @DELETE("kategori/{id}")
-    suspend fun deleteKategori(
-        @Path("id") id: Long
-    ): ResponseBody
+    suspend fun deleteKategori(@Path("id") id: Long): Response<Unit>
 }
 
 

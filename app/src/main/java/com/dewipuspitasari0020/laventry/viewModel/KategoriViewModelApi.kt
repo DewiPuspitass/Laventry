@@ -1,6 +1,7 @@
 package com.dewipuspitasari0020.laventry.viewModel
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dewipuspitasari0020.laventry.model.Kategori
@@ -17,6 +18,13 @@ class KategoriViewModelApi: ViewModel() {
 
     var status = MutableStateFlow(ApiStatus.LOADING)
         private set
+
+    var errorMessage = mutableStateOf<String?>(null)
+        private set
+
+    fun clearErrorMessage() {
+        errorMessage.value = null
+    }
 
     init {
         retrieveData()
@@ -69,10 +77,23 @@ class KategoriViewModelApi: ViewModel() {
     fun deleteKategori(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                KategoriApi.service.deleteKategori(id)
-                retrieveData()
+                val response = KategoriApi.service.deleteKategori(id)
+
+                if (response.isSuccessful) {
+                    errorMessage.value = "Kategori berhasil dihapus."
+                    retrieveData()
+                } else {
+                    if (response.code() == 409) {
+                        errorMessage.value = "Maaf, kategori sedang dipakai oleh barang lain."
+                        status.value = ApiStatus.SUCCESS
+                    } else {
+                        errorMessage.value = "Gagal menghapus. Error: ${response.code()}"
+                        status.value = ApiStatus.FAILED
+                    }
+                }
             } catch (e: Exception) {
-                Log.e("KategoriViewModelApi", "Delete failed: ${e.message}")
+                errorMessage.value = "Terjadi kesalahan pada jaringan."
+                status.value = ApiStatus.FAILED
             }
         }
     }
