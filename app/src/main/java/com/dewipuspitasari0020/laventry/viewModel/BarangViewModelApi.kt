@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -49,17 +50,18 @@ class BarangViewModelApi: ViewModel() {
         }
     }
 
-    suspend fun retrieveBarangById(id: Long, userId: String): Barang? {
+    suspend fun retrieveBarangById(userId: String, id: Long): Barang? {
         return try {
-            val response = BarangApi.service.getBarang(userId)
+            val response = BarangApi.service.getBarangById(userId, id)
             if (response.status) {
-                response.data.find { it.id == id }
+                response.data
             } else null
         } catch (e: Exception) {
             Log.d("BarangViewModelApi", "Failure: ${e.message}")
             null
         }
     }
+
 
     fun insertBarang(
         userId: String,
@@ -72,6 +74,7 @@ class BarangViewModelApi: ViewModel() {
         fotoBitmap: Bitmap
     ) {
         viewModelScope.launch(Dispatchers.IO) {
+            status.value = ApiStatus.LOADING
             try {
                 val requestImage = fotoBitmap.toMultipartImagePart("foto_barang")
 
@@ -95,9 +98,9 @@ class BarangViewModelApi: ViewModel() {
                         val errorBody = response.errorBody()?.string()
                         errorMessage.value = "Gagal menyimpan barang. ${response.message()}"
                         Log.e("InsertBarang", "Error upload: $errorBody")
+                        status.value = ApiStatus.FAILED
                     }
                 }
-                status.value = ApiStatus.SUCCESS
             } catch (e: Exception) {
                 Log.e("InsertBarang", "Exception: ${e.message}")
                 errorMessage.value = "Error: ${e.message}"
@@ -107,6 +110,7 @@ class BarangViewModelApi: ViewModel() {
     }
 
     fun updateBarang(
+        userId: String,
         id: Long,
         namaBarang: String,
         jumlah: Int,
@@ -114,32 +118,46 @@ class BarangViewModelApi: ViewModel() {
         kategoriId: Long,
         barcode: String,
         deskripsi: String,
-        fotoBitmap: Bitmap
+        fotoBitmap: Bitmap?
     ) {
         viewModelScope.launch(Dispatchers.IO) {
+            status.value = ApiStatus.LOADING
             try {
-                val requestImage = fotoBitmap.toMultipartImagePart("foto_barang")
+                val namaBody = namaBarang.toRequestBody("text/plain".toMediaType())
+                val jumlahBody = jumlah.toString().toRequestBody("text/plain".toMediaType())
+                val hargaBody = harga.toString().toRequestBody("text/plain".toMediaType())
+                val kategoriBody = kategoriId.toString().toRequestBody("text/plain".toMediaType())
+                val barcodeBody = barcode.toRequestBody("text/plain".toMediaType())
+                val deskripsiBody = deskripsi.toRequestBody("text/plain".toMediaType())
 
-                val response = BarangApi.service.updateBarang(
-                    id = id,
-                    namaBarang.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    jumlah.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
-                    harga.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
-                    kategoriId.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
-                    barcode.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    deskripsi.toRequestBody("text/plain".toMediaTypeOrNull()),
+                val requestImage = fotoBitmap?.toMultipartImagePart("foto_barang")
+
+                Log.d("UpdateBarang", "Nama: $namaBarang, Jumlah: $jumlah, Harga: $harga, Kategori: $kategoriId, Barcode: $barcode, Deskripsi: $deskripsi")
+                val call = BarangApi.service.updateBarang(
+                    userId,
+                    id,
+                    namaBody,
+                    jumlahBody,
+                    hargaBody,
+                    kategoriBody,
+                    barcodeBody,
+                    deskripsiBody,
                     requestImage
                 )
 
+                val response = call.execute()
+
                 if (response.isSuccessful) {
-//                    retriveData(userId)
+                    retriveData(userId)
                     Log.i("UpdateBarang", "Update berhasil!")
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e("UpdateBarang", "Gagal update: $errorBody")
+                    status.value = ApiStatus.FAILED
                 }
             } catch (e: Exception) {
                 Log.e("InsertBarang", "Exception: ${e.message}")
+                status.value = ApiStatus.FAILED
             }
         }
     }
@@ -147,20 +165,31 @@ class BarangViewModelApi: ViewModel() {
     fun Bitmap.toMultipartImagePart(fieldName: String): MultipartBody.Part {
         val bos = ByteArrayOutputStream()
         this.compress(Bitmap.CompressFormat.JPEG, 100, bos)
-        val bitmapData = bos.toByteArray()
+        val reqFile = bos.toByteArray()
+            .toRequestBody("image/jpeg".toMediaTypeOrNull())
 
-        val reqFile = bitmapData.toRequestBody("image/jpeg".toMediaTypeOrNull())
         return MultipartBody.Part.createFormData(fieldName, "image.jpg", reqFile)
     }
 
-    fun deleteBarang(id: Long){
+    fun deleteBarang(userId: String, id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
+            // Status diubah jadi LOADING, ini sudah benar.
+            status.value = ApiStatus.LOADING
             try {
-                BarangApi.service.deleteBarang(id)
-                Log.e("BarangViewModelApi", "Delete success")
-//                retriveData(userId)
+                val response = BarangApi.service.deleteBarang(userId, id)
+
+                if (response.isSuccessful) {
+                    Log.i("BarangViewModelApi", "Delete success for id: $id")
+                    retriveData(userId)
+                } else {
+                    Log.e("BarangViewModelApi", "Delete failed on server: ${response.message()}")
+                    errorMessage.value = "Gagal menghapus barang."
+                    status.value = ApiStatus.FAILED
+                }
             } catch (e: Exception) {
-                Log.e("BarangViewModelApi", "Delete failed: ${e.message}")
+                Log.e("BarangViewModelApi", "Delete exception: ${e.message}")
+                errorMessage.value = "Terjadi kesalahan: ${e.message}"
+                status.value = ApiStatus.FAILED
             }
         }
     }

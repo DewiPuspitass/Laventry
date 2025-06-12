@@ -38,3 +38,9 @@ data class BarangResponse(
     val data: List<Barang>
 )
 
+data class BarangResponseId(
+    val status: Boolean,
+    val message: String,
+    val data: Barang
+)
+

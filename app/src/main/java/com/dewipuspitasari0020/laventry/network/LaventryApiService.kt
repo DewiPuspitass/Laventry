@@ -1,12 +1,16 @@
 package com.dewipuspitasari0020.laventry.network
 
 import com.dewipuspitasari0020.laventry.model.BarangResponse
+import com.dewipuspitasari0020.laventry.model.BarangResponseId
 import com.dewipuspitasari0020.laventry.model.KategoriResponse
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
+import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -78,11 +82,14 @@ interface BarangApiService {
 
     @GET("barang/{id}")
     suspend fun getBarangById(
-        @Part("id") id: Long
-    ): BarangResponse
+        @Header("User-Id") userId: String,
+        @Path("id") id: Long
+    ): BarangResponseId
 
-    @PUT("barang/{id}")
-    suspend fun updateBarang(
+    @Multipart
+    @POST("barang/{id}")
+    fun updateBarang(
+        @Header("User-Id") userId: String,
         @Path("id") id: Long,
         @Part("nama_barang") namaBarang: RequestBody,
         @Part("jumlah") jumlah: RequestBody,
@@ -90,14 +97,15 @@ interface BarangApiService {
         @Part("kategori_id") kategoriId: RequestBody,
         @Part("barcode") barcode: RequestBody,
         @Part("deskripsi") deskripsi: RequestBody,
-        @Part fotoBarang: MultipartBody.Part? = null
-    ): Response<ResponseBody>
-
+        @Part foto: MultipartBody.Part?,
+        @Part("_method") method: RequestBody = "PUT".toRequestBody("text/plain".toMediaType())
+    ): Call<ResponseBody>
 
     @DELETE("barang/{id}")
     suspend fun deleteBarang(
+        @Header("User-Id") userId: String,
         @Path("id") id: Long
-    ): ResponseBody
+    ): Response<ResponseBody>
 }
 
 object KategoriApi {

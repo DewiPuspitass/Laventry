@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -89,23 +90,35 @@ import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
 import com.dewipuspitasari0020.laventry.viewModel.KategoriViewModelApi
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
 const val KEY_ID_BARANG = "id"
-
 @RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
     var showDialog by remember { mutableStateOf(false) }
     val viewModel: BarangViewModelApi = viewModel()
+
+    val status by viewModel.status.collectAsState()
+
+    val context = LocalContext.current
+    val datastore = UserDataStore(context)
+    val user by datastore.userFlow.collectAsState(User())
+
+    LaunchedEffect(status) {
+        if (status == ApiStatus.SUCCESS)
+            navController.popBackStack()
+    }
+
     Scaffold(
         containerColor = bg,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    if(id == null)
+                    if (id == null)
                         Text(stringResource(R.string.add_items))
                     else
                         Text(stringResource(R.string.edit_items))
@@ -126,7 +139,7 @@ fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
                     }
                 },
                 actions = {
-                    if (id != null){
+                    if (id != null) {
                         DeleteAction {
                             showDialog = true
                         }
@@ -147,27 +160,35 @@ fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
             )
         }
     ) { innerPadding ->
-        AddItems(viewModel, modifier = Modifier.padding(innerPadding), id = id, navController = navController)
-        if(id != null && showDialog){
+        AddItems(
+            viewModel,
+            modifier = Modifier.padding(innerPadding),
+            id = id,
+            navController = navController
+        )
+        if (id != null && showDialog) {
             DisplayAlertDialog(
-                onDismissRequest = { showDialog = false }) {
-                showDialog = false
-                viewModel.deleteBarang(id)
-                navController.popBackStack()
-                Log.d("Delete", "Berhasil di hapus")
-            }
-        } else {
-            Log.e("Delete", "Delete gagal")
+                onDismissRequest = { showDialog = false },
+                onConfirmation = {
+                    showDialog = false
+                    viewModel.deleteBarang(user.email, id)
+                }
+            )
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
-fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: Long? = null, navController: NavHostController) {
+fun AddItems(
+    viewModel: BarangViewModelApi,
+    modifier: Modifier = Modifier,
+    id: Long? = null,
+    navController: NavHostController
+) {
     val context = LocalContext.current
-    val viewModel1: KategoriViewModelApi = viewModel()
-    val kategoriList by viewModel1.data.collectAsState(initial = emptyList())
+    val kategoriViewModel: KategoriViewModelApi = viewModel()
+    val kategoriList by kategoriViewModel.data.collectAsState(initial = emptyList())
 
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var savedPath by remember { mutableStateOf("") }
@@ -186,15 +207,18 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
     var barcodeError by remember { mutableStateOf("") }
     var deskripsiError by remember { mutableStateOf("") }
     var selectedCategoryError by remember { mutableStateOf("") }
-    val status by viewModel.status.collectAsState()
 
+    val status by viewModel.status.collectAsState()
     val errorMessage = viewModel.errorMessage.value
 
     val datastore = UserDataStore(context)
     val user by datastore.userFlow.collectAsState(User())
 
+    var imageUpdated by remember { mutableStateOf(false) }
+    var currentId by remember { mutableStateOf(id) }
+
     LaunchedEffect(Unit) {
-        viewModel1.retrieveData()
+        kategoriViewModel.retrieveData()
     }
 
     LaunchedEffect(errorMessage) {
@@ -204,15 +228,13 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
         }
     }
 
-    LaunchedEffect(status) {
-        if (status == ApiStatus.SUCCESS)
-            navController.popBackStack()
-    }
-
-    LaunchedEffect(id) {
-        if (id != null) {
-            val barang = viewModel.retrieveBarangById(id, user.email)
+    LaunchedEffect(id, user.email) {
+        Log.d("DEBUG", "ID: $id | Email: ${user.email}")
+        if (id != null && user.email.isNotBlank()) {
+            val barang = viewModel.retrieveBarangById(user.email, id)
+            Log.d("DEBUG", "Barang ditemukan: $barang")
             barang?.let {
+                currentId = id
                 namaBarang = it.nama_barang
                 jumlah = it.jumlah.toString()
                 harga = it.harga.toString()
@@ -231,18 +253,17 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
         uri?.let {
             val maxSizeInBytes = 15 * 1024 * 1024
             val fileSize = getFileSizeFromUri(context, it)
-
             if (fileSize > maxSizeInBytes) {
-                Toast.makeText(context, "Ukuran gambar terlalu besar (maks 2MB)", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Ukuran gambar terlalu besar (maks 15MB)", Toast.LENGTH_LONG).show()
                 imageUri = null
                 imageError = "Ukuran gambar terlalu besar"
             } else {
                 imageUri = it
                 imageError = ""
+                imageUpdated = true
             }
         }
     }
-
 
     Column(
         modifier = modifier
@@ -295,7 +316,12 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
                     keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words)
                 )
                 if (namaBarangError.isNotBlank()) {
-                    Text(text = namaBarangError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 24.dp))
+                    Text(
+                        text = namaBarangError,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
                 }
 
                 InputPendek(
@@ -306,7 +332,12 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
                 if (hargaError.isNotBlank()) {
-                    Text(text = hargaError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(
+                        text = hargaError,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -319,7 +350,12 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
                 if (jumlahError.isNotBlank()) {
-                    Text(text = jumlahError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(
+                        text = jumlahError,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                 }
 
                 DropdownCategory(
@@ -333,7 +369,12 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
                 )
 
                 if (selectedCategoryError.isNotBlank()) {
-                    Text(text = selectedCategoryError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(
+                        text = selectedCategoryError,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                 }
             }
         }
@@ -341,13 +382,20 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
             label = stringResource(R.string.barcode),
             placeholder = "Barcode",
             value = barcode,
-            onValueChange = { if (it.length <= 13 && it.all { char -> char.isDigit() }) {
-                barcode = it
-            } },
+            onValueChange = {
+                if (it.length <= 13 && it.all { char -> char.isDigit() }) {
+                    barcode = it
+                }
+            },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
         )
         if (barcodeError.isNotBlank()) {
-            Text(text = barcodeError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
+            Text(
+                text = barcodeError,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
         }
 
         Text(
@@ -360,9 +408,11 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
         TextField(
             value = deskripsi,
             onValueChange = { deskripsi = it },
-            modifier = Modifier.height(120.dp)
+            modifier = Modifier
+                .height(120.dp)
                 .fillMaxWidth()
-                .background(Color.White, shape = RoundedCornerShape(50.dp)
+                .background(
+                    Color.White, shape = RoundedCornerShape(50.dp)
                 ),
             shape = RoundedCornerShape(24.dp),
             colors = TextFieldDefaults.colors(
@@ -382,7 +432,12 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
         )
 
         if (deskripsiError.isNotBlank()) {
-            Text(text = deskripsiError, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+            Text(
+                text = deskripsiError,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
 
         Row(
@@ -401,91 +456,70 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
                     selectedCategoryError = ""
                     imageError = ""
 
-                    if (namaBarang.isBlank()) {
-                        namaBarangError = "Nama Barang is required"
-                    }
-
-                    if (jumlah.isBlank() || jumlah.toIntOrNull() == null) {
-                        jumlahError = "Jumlah must be a valid number"
-                    }
-
-                    if (harga.isBlank() || harga.toDoubleOrNull() == null) {
-                        hargaError = "Harga must be a valid number"
-                    }
-
-                    if (selectedCategoryId == null) {
-                        selectedCategoryError = "Category must be selected"
-                    }
-
-                    if (barcode.isBlank()) {
-                        barcodeError = "Barcode is required"
-                    }
-
-                    if (deskripsi.isBlank()) {
-                        deskripsiError = "Deskripsi is required"
-                    }
-
-                    if (imageUri == null) {
-                        imageError = "Image is required"
-                    }
+                    if (namaBarang.isBlank()) namaBarangError = "Nama Barang wajib diisi"
+                    if (jumlah.isBlank() || jumlah.toIntOrNull() == null) jumlahError = "Jumlah harus angka"
+                    if (harga.isBlank() || harga.toDoubleOrNull() == null) hargaError = "Harga harus angka"
+                    if (barcode.isBlank()) barcodeError = "Barcode wajib diisi"
+                    if (deskripsi.isBlank()) deskripsiError = "Deskripsi wajib diisi"
+                    if (selectedCategoryId == null) selectedCategoryError = "Pilih kategori"
+                    if (id == null && imageUri == null) imageError = "Gambar wajib dipilih"
 
                     if (
                         namaBarangError.isBlank() &&
                         jumlahError.isBlank() &&
                         hargaError.isBlank() &&
-                        selectedCategoryError.isBlank() &&
                         barcodeError.isBlank() &&
                         deskripsiError.isBlank() &&
-                        imageError.isBlank() &&
-                        selectedCategoryId != null
+                        selectedCategoryError.isBlank() &&
+                        imageError.isBlank()
                     ) {
-                        val kategoriId: Long = selectedCategoryId!!
+                        val kategoriId = selectedCategoryId!!
 
-                        imageUri?.let {
-                            val bitmap = uriToBitmap(context, it)
+                        val finalImageUri = imageUri
+                        val bitmap = if ((imageUpdated || id == null) && finalImageUri != null) {
+                            uriToBitmap(context, finalImageUri)
+                        } else null
+
+                        if (id == null) {
                             if (bitmap != null) {
-                                if (id == null) {
-                                    Log.d("InsertBarang", "User ID: ${user.email}")
-                                    viewModel.insertBarang(
-                                        userId = user.email,
-                                        namaBarang = namaBarang,
-                                        jumlah = jumlah.toInt(),
-                                        harga = harga.toDouble(),
-                                        kategoriId = kategoriId,
-                                        barcode = barcode,
-                                        deskripsi = deskripsi,
-                                        fotoBitmap = bitmap
-                                    )
-                                } else {
-                                    viewModel.updateBarang(
-                                        id = id,
-                                        namaBarang = namaBarang,
-                                        jumlah = jumlah.toInt(),
-                                        harga = harga.toDouble(),
-                                        kategoriId = kategoriId,
-                                        barcode = barcode,
-                                        deskripsi = deskripsi,
-                                        fotoBitmap = bitmap
-                                    )
-                                }
+                                viewModel.insertBarang(
+                                    userId = user.email,
+                                    namaBarang = namaBarang,
+                                    jumlah = jumlah.toInt(),
+                                    harga = harga.toDouble(),
+                                    kategoriId = kategoriId,
+                                    barcode = barcode,
+                                    deskripsi = deskripsi,
+                                    fotoBitmap = bitmap
+                                )
                             } else {
                                 imageError = "Gagal memproses gambar"
                             }
-                    } ?: run {
-                            Log.e("InputError", "Gambar null")
+                        } else {
+                            viewModel.updateBarang(
+                                userId = user.email,
+                                id = currentId!!,
+                                namaBarang = namaBarang,
+                                jumlah = jumlah.toInt(),
+                                harga = harga.toDouble(),
+                                kategoriId = kategoriId,
+                                barcode = barcode,
+                                deskripsi = deskripsi,
+                                fotoBitmap = bitmap
+                            )
                         }
                     }
                 },
                 modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp),
+                    .fillMaxWidth()
+                    .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF3B82F6),
                     contentColor = Color.White
                 )
             ) {
-                Text("Save")
+                Text(if (id == null) "Tambah Barang" else "Update Barang")
             }
         }
     }
@@ -493,28 +527,44 @@ fun AddItems(viewModel: BarangViewModelApi, modifier: Modifier = Modifier, id: L
 
 fun getFileSizeFromUri(context: Context, uri: Uri): Long {
     val cursor = context.contentResolver.query(uri, null, null, null, null)
-    return cursor?.use {
-        val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
-        it.moveToFirst()
-        it.getLong(sizeIndex)
-    } ?: 0L
+    return if (cursor != null && cursor.moveToFirst()) {
+        val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+        val size = if (sizeIndex != -1) cursor.getLong(sizeIndex) else 0L
+        cursor.close()
+        size
+    } else {
+        0L
+    }
 }
-
 
 fun uriToBitmap(context: Context, uri: Uri): Bitmap? {
     return try {
-        when {
-            uri.scheme == "content" || uri.scheme == "file" -> {
-                val inputStream = context.contentResolver.openInputStream(uri)
-                BitmapFactory.decodeStream(inputStream)
+        when (uri.scheme) {
+            "content" -> {
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    BitmapFactory.decodeStream(inputStream)
+                }
             }
-            uri.scheme == "http" || uri.scheme == "https" -> {
+            "file" -> {
+                uri.path?.let { path ->
+                    BitmapFactory.decodeFile(path)
+                }
+            }
+            "http", "https" -> {
                 val url = URL(uri.toString())
                 val connection = url.openConnection() as HttpURLConnection
                 connection.doInput = true
                 connection.connect()
-                val inputStream = connection.inputStream
-                BitmapFactory.decodeStream(inputStream)
+                connection.inputStream.use { inputStream ->
+                    BitmapFactory.decodeStream(inputStream)
+                }
+            }
+            null -> {
+                if (uri.path != null && File(uri.path!!).exists()) {
+                    BitmapFactory.decodeFile(uri.path)
+                } else {
+                    null
+                }
             }
             else -> null
         }
@@ -572,9 +622,11 @@ fun InputPendek(
     onValueChange: (String) -> Unit,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text)
 ) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(bottom = 16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
@@ -676,7 +728,7 @@ fun DeleteAction(delete: () -> Unit) {
         )
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false}
+            onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
                 text = {
