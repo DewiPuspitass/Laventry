@@ -116,6 +116,7 @@ class BarangViewModelApi: ViewModel() {
 
                 if (response.isSuccessful) {
                     retriveData(userId)
+                    status.value = ApiStatus.SUCCESS
                 } else {
                     if (response.code() == 413){
                         errorMessage.value = "File Image terlalu besar."
@@ -175,6 +176,8 @@ class BarangViewModelApi: ViewModel() {
                 if (response.isSuccessful) {
                     retriveData(userId)
                     Log.i("UpdateBarang", "Update berhasil!")
+                    status.value = ApiStatus.SUCCESS
+
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e("UpdateBarang", "Gagal update: $errorBody")
@@ -205,6 +208,7 @@ class BarangViewModelApi: ViewModel() {
                 if (response.isSuccessful) {
                     Log.i("BarangViewModelApi", "Delete success for id: $id")
                     retriveData(userId)
+                    status.value = ApiStatus.SUCCESS
                 } else {
                     Log.e("BarangViewModelApi", "Delete failed on server: ${response.message()}")
                     errorMessage.value = "Gagal menghapus barang."

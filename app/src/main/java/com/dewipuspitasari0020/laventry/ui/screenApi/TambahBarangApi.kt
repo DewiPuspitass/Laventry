@@ -106,12 +106,6 @@ fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
     val context = LocalContext.current
     val datastore = UserDataStore(context)
     val user by datastore.userFlow.collectAsState(User())
-
-    LaunchedEffect(status) {
-        if (status == ApiStatus.SUCCESS)
-            navController.popBackStack()
-    }
-
     Scaffold(
         containerColor = bg,
         topBar = {
@@ -215,6 +209,8 @@ fun AddItems(
     var imageUpdated by remember { mutableStateOf(false) }
     var currentId by remember { mutableStateOf(id) }
 
+    val status by viewModel.status.collectAsState()
+
     LaunchedEffect(Unit) {
         kategoriViewModel.retrieveData()
     }
@@ -224,6 +220,11 @@ fun AddItems(
             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
             viewModel.clearErrorMessage()
         }
+    }
+
+    LaunchedEffect(status) {
+        if (status == ApiStatus.SUCCESS)
+            navController.popBackStack()
     }
 
     LaunchedEffect(id, user.email) {
