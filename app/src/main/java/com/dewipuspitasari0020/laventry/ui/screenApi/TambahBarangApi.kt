@@ -447,12 +447,6 @@ fun AddItems(
         ) {
             Button(
                 onClick = {
-                    namaBarangError = ""
-                    jumlahError = ""
-                    hargaError = ""
-                    barcodeError = ""
-                    deskripsiError = ""
-                    selectedCategoryError = ""
                     imageError = ""
 
                     if (namaBarang.isBlank()) namaBarangError = "Nama Barang wajib diisi"
@@ -461,7 +455,10 @@ fun AddItems(
                     if (barcode.isBlank()) barcodeError = "Barcode wajib diisi"
                     if (deskripsi.isBlank()) deskripsiError = "Deskripsi wajib diisi"
                     if (selectedCategoryId == null) selectedCategoryError = "Pilih kategori"
-                    if (id == null && imageUri == null) imageError = "Gambar wajib dipilih"
+
+                    if (imageError.isBlank() && id == null && imageUri == null) {
+                        imageError = "Gambar wajib dipilih"
+                    }
 
                     if (
                         namaBarangError.isBlank() &&

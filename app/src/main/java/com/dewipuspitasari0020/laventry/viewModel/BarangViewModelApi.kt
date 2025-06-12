@@ -185,9 +185,14 @@ class BarangViewModelApi: ViewModel() {
                     status.value = ApiStatus.SUCCESS
 
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("UpdateBarang", "Gagal update: $errorBody")
-                    status.value = ApiStatus.FAILED
+                    if (response.code() == 413){
+                        errorMessage.value = "File Image terlalu besar."
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        errorMessage.value = "Gagal update barang. ${response.message()}"
+                        Log.e("UpdateBarang", "Error upload: $errorBody")
+                        status.value = ApiStatus.FAILED
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("InsertBarang", "Exception: ${e.message}")
