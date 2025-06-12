@@ -197,12 +197,16 @@ fun MainScreenApi(navController: NavHostController) {
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: NavHostController) {
     val viewModel:BarangViewModelApi = viewModel()
-    val data by viewModel.data.collectAsState(initial = emptyList())
     val uiState by viewModel.uiState.collectAsState()
-    val status by viewModel.status.collectAsState()
+
+    val stats = viewModel.dashboardStats
+    val error = viewModel.pesanError
 
     LaunchedEffect(userId) {
-        viewModel.retriveData(userId)
+        if (userId.isNotEmpty()) {
+            viewModel.retriveData(userId)
+            viewModel.muatStatistikDashboard(userId)
+        }
     }
 
     Column(
@@ -215,15 +219,31 @@ fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: 
                 bottom = 0.dp
             )
     ) {
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            item {
-                CardInfo(stringResource(R.string.out_of_stock), "11k", painterResource(R.drawable.boxopenfull))
+        if (error != null) {
+            Text(text = "Error: $error", color = Color.Red)
+        } else if (stats != null) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                item {
+                    CardInfo(stringResource(R.string.out_of_stock), "${stats.out_of_stock}", painterResource(R.drawable.boxopenfull))
+                }
+                item {
+                    CardInfo(stringResource(R.string.lowstock), "${stats.low_stock}", painterResource(R.drawable.chart))
+                }
+                item {
+                    CardInfo(stringResource(R.string.total_items), "${stats.total_items}", painterResource(R.drawable.items))
+                }
             }
-            item {
-                CardInfo(stringResource(R.string.lowstock), "11", painterResource(R.drawable.chart))
-            }
-            item {
-                CardInfo(stringResource(R.string.total_items), "11", painterResource(R.drawable.items))
+        } else {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                item {
+                    CardInfo(stringResource(R.string.out_of_stock), "0", painterResource(R.drawable.boxopenfull))
+                }
+                item {
+                    CardInfo(stringResource(R.string.lowstock), "0", painterResource(R.drawable.chart))
+                }
+                item {
+                    CardInfo(stringResource(R.string.total_items), "0", painterResource(R.drawable.items))
+                }
             }
         }
 

@@ -2,10 +2,13 @@ package com.dewipuspitasari0020.laventry.viewModel
 
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dewipuspitasari0020.laventry.model.Barang
+import com.dewipuspitasari0020.laventry.model.BarangStats
 import com.dewipuspitasari0020.laventry.model.BarangUiState
 import com.dewipuspitasari0020.laventry.network.ApiStatus
 import com.dewipuspitasari0020.laventry.network.BarangApi
@@ -34,8 +37,30 @@ class BarangViewModelApi: ViewModel() {
         errorMessage.value = null
     }
 
+    var dashboardStats by mutableStateOf<BarangStats?>(null)
+        private set
+
+    var pesanError by mutableStateOf<String?>(null)
+        private set
+
     private val _uiState = MutableStateFlow(BarangUiState())
     val uiState: StateFlow<BarangUiState> = _uiState.asStateFlow()
+
+    fun muatStatistikDashboard(userId: String) {
+        viewModelScope.launch {
+            try {
+                val response = BarangApi.service.getBarangStats(userId)
+                if (response.success) {
+                    dashboardStats = response.data
+                    pesanError = null
+                } else {
+                    pesanError = response.message ?: "Terjadi kesalahan."
+                }
+            } catch (e: Exception) {
+                pesanError = "Gagal terhubung ke server: ${e.message}"
+            }
+        }
+    }
 
     fun retriveData(userId: String) {
         viewModelScope.launch {

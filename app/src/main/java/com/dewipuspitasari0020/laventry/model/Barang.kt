@@ -51,3 +51,15 @@ data class BarangUiState(
     val error: String? = null
 )
 
+data class BarangStats(
+    val out_of_stock: Int = 0,
+    val low_stock: Int = 0,
+    val total_items: Int = 0
+)
+
+data class ApiResponse<T>(
+    val success: Boolean,
+    val data: T,
+    val message: String? = null
+)
+

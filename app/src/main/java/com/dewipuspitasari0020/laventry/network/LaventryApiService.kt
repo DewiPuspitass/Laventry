@@ -1,7 +1,9 @@
 package com.dewipuspitasari0020.laventry.network
 
+import com.dewipuspitasari0020.laventry.model.ApiResponse
 import com.dewipuspitasari0020.laventry.model.BarangResponse
 import com.dewipuspitasari0020.laventry.model.BarangResponseId
+import com.dewipuspitasari0020.laventry.model.BarangStats
 import com.dewipuspitasari0020.laventry.model.KategoriResponse
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
@@ -64,6 +66,11 @@ interface BarangApiService {
     suspend fun getBarang(
         @Header("User-Id") userId: String
     ): BarangResponse
+
+    @GET("ketersediaan_barang")
+    suspend fun getBarangStats(
+        @Header("User-Id") userId: String
+    ): ApiResponse<BarangStats>
 
     @Multipart
     @POST("barang/tambah")
