@@ -101,8 +101,6 @@ fun AddItemsScreen2(navController: NavHostController, id: Long? = null) {
     var showDialog by remember { mutableStateOf(false) }
     val viewModel: BarangViewModelApi = viewModel()
 
-    val status by viewModel.status.collectAsState()
-
     val context = LocalContext.current
     val datastore = UserDataStore(context)
     val user by datastore.userFlow.collectAsState(User())

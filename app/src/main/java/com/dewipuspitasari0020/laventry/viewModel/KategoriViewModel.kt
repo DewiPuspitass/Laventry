@@ -25,10 +25,6 @@ class KategoriViewModel(private val dao: KategoriDao,  private val barangDao: Ba
         }
     }
 
-    suspend fun getKategori(id: Long): Kategori? {
-        return dao.getKategoriById(id)
-    }
-
     fun update(
         id: Long,
         namaKategori: String

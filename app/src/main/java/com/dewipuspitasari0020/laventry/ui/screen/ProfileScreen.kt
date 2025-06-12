@@ -62,8 +62,6 @@ import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +72,6 @@ fun ProfileScreen(navController: NavHostController) {
     val user by datastore.userFlow.collectAsState(User())
 
     val viewModel: BarangViewModelApi = viewModel()
-    val dataStore = UserDataStore(LocalContext.current)
     val coroutineScope = rememberCoroutineScope()
 
     var showDialog by remember { mutableStateOf(false) }

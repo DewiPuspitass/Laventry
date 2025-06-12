@@ -56,8 +56,6 @@ import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
 import com.dewipuspitasari0020.laventry.util.ViewModelFactory
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModel
-import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
-import com.dewipuspitasari0020.laventry.viewModel.KategoriViewModelApi
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -155,9 +153,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val outOfStock by viewModel.outOfStock.collectAsState()
     val lowStock by viewModel.lowStock.collectAsState()
     val totalItems by viewModel.totalItems.collectAsState()
-
-    val viewModel1 : KategoriViewModelApi = viewModel()
-    val viewModel2 : BarangViewModelApi = viewModel()
 
     LaunchedEffect(Unit) {
         viewModel.loadSummaryData()
