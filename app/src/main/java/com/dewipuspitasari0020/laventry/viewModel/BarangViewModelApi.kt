@@ -6,11 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dewipuspitasari0020.laventry.model.Barang
+import com.dewipuspitasari0020.laventry.model.BarangUiState
 import com.dewipuspitasari0020.laventry.network.ApiStatus
 import com.dewipuspitasari0020.laventry.network.BarangApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -32,20 +34,18 @@ class BarangViewModelApi: ViewModel() {
         errorMessage.value = null
     }
 
+    private val _uiState = MutableStateFlow(BarangUiState())
+    val uiState: StateFlow<BarangUiState> = _uiState.asStateFlow()
+
     fun retriveData(userId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            status.value = ApiStatus.LOADING
+        viewModelScope.launch {
+            _uiState.value = BarangUiState(status = ApiStatus.LOADING)
             try {
-                val response = BarangApi.service.getBarang(userId)
-                if (response.status) {
-                    _data.value = response.data
-                } else {
-                    _data.value = emptyList()
-                }
-                status.value = ApiStatus.SUCCESS
-            } catch (e: Exception){
-                Log.d("BarangViewModelApi", "Failure: ${e.message}")
-                status.value = ApiStatus.FAILED
+                val result = BarangApi.service.getBarang(userId)
+                _uiState.value = BarangUiState(status = ApiStatus.SUCCESS, data = result.data)
+
+            } catch (e: Exception) {
+                _uiState.value = BarangUiState(status = ApiStatus.FAILED, error = e.message)
             }
         }
     }

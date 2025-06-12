@@ -198,7 +198,7 @@ fun MainScreenApi(navController: NavHostController) {
 fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: NavHostController) {
     val viewModel:BarangViewModelApi = viewModel()
     val data by viewModel.data.collectAsState(initial = emptyList())
-
+    val uiState by viewModel.uiState.collectAsState()
     val status by viewModel.status.collectAsState()
 
     LaunchedEffect(userId) {
@@ -240,7 +240,7 @@ fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: 
                 Text("View All")
             }
         }
-        when (status) {
+        when (uiState.status) {
             ApiStatus.LOADING -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -250,7 +250,7 @@ fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: 
                 }
             }
             ApiStatus.SUCCESS -> {
-                if (data.isEmpty()) {
+                if (uiState.data.isEmpty()) {
                     Column(
                         modifier = modifier
                             .fillMaxSize()
@@ -264,7 +264,7 @@ fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: 
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(data) { barang ->
+                        items(uiState.data) { barang ->
                             val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
 
                             CardBarang(

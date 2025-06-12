@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.dewipuspitasari0020.laventry.network.ApiStatus
 import com.squareup.moshi.Json
 
 @Entity(
@@ -42,5 +43,11 @@ data class BarangResponseId(
     val status: Boolean,
     val message: String,
     val data: Barang
+)
+
+data class BarangUiState(
+    val status: ApiStatus = ApiStatus.LOADING,
+    val data: List<Barang> = emptyList(),
+    val error: String? = null
 )
 

@@ -87,16 +87,17 @@ fun InventoryScreenApi(navController: NavHostController) {
     }
 
     val viewModel: BarangViewModelApi = viewModel()
-    val data by viewModel.data.collectAsState(initial = emptyList())
 
     val context = LocalContext.current
     val datastore = UserDataStore(context)
     val user by datastore.userFlow.collectAsState(User())
 
-    val status by viewModel.status.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(user.email) {
-        viewModel.retriveData(user.email)
+        if (user.email.isNotEmpty()) {
+            viewModel.retriveData(user.email)
+        }
     }
 
     Scaffold(
@@ -215,7 +216,7 @@ fun InventoryScreenApi(navController: NavHostController) {
             )
         }
     ) { innerPadding ->
-        when (status) {
+        when (uiState.status) {
             ApiStatus.LOADING -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -231,7 +232,7 @@ fun InventoryScreenApi(navController: NavHostController) {
                         .padding(innerPadding)
                         .padding(16.dp)
                 ) {
-                    if (data.isEmpty()) {
+                    if (uiState.data.isEmpty()) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -246,7 +247,7 @@ fun InventoryScreenApi(navController: NavHostController) {
                             LazyColumn(
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                items(data) { barang ->
+                                items(uiState.data) { barang ->
                                     val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
 
                                     CardBarang(
@@ -269,9 +270,9 @@ fun InventoryScreenApi(navController: NavHostController) {
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 contentPadding = PaddingValues(8.dp, 8.dp, 8.dp, 84.dp)
                             ) {
-                                items(data) {
-                                    GridItemApi(barang = it) {
-                                        navController.navigate(Screen.EditBarang.withId(it.id))
+                                items(uiState.data) { barang ->
+                                    GridItemApi(barang = barang) {
+                                        navController.navigate(Screen.EditBarang.withId(barang.id))
                                     }
                                 }
                             }
