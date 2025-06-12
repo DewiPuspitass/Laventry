@@ -43,8 +43,14 @@ class BarangViewModelApi: ViewModel() {
     var pesanError by mutableStateOf<String?>(null)
         private set
 
-    private val _uiState = MutableStateFlow(BarangUiState())
+    private val _uiState = MutableStateFlow(BarangUiState(status = ApiStatus.SUCCESS, data = emptyList()))
+
     val uiState: StateFlow<BarangUiState> = _uiState.asStateFlow()
+
+    fun clearDashboardData() {
+        dashboardStats = null
+        pesanError = null
+    }
 
     fun muatStatistikDashboard(userId: String) {
         viewModelScope.launch {
@@ -220,5 +226,10 @@ class BarangViewModelApi: ViewModel() {
                 status.value = ApiStatus.FAILED
             }
         }
+    }
+
+    fun onLogout() {
+        clearDashboardData()
+        _uiState.value = BarangUiState(status = ApiStatus.SUCCESS, data = emptyList())
     }
 }

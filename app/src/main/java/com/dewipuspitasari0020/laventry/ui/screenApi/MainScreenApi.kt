@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -47,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -89,6 +91,7 @@ fun MainScreenApi(navController: NavHostController) {
     val context = LocalContext.current
     val datastore = UserDataStore(context)
     val user by datastore.userFlow.collectAsState(User())
+    val userId = user.email
 
     val selectedIndex = when (currentRoute) {
         Screen.Home.route -> 0
@@ -145,20 +148,22 @@ fun MainScreenApi(navController: NavHostController) {
                     }
                 },
                 actions = {
-                    Box(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(color = white)
-                            .clickable { navController.navigate(Screen.TambahBarang.route) }
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Tambah",
-                            tint = Color.Black
-                        )
+                    if (userId.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(color = white)
+                                .clickable { navController.navigate(Screen.TambahBarang.route) }
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Tambah",
+                                tint = Color.Black
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.padding(
@@ -206,6 +211,8 @@ fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: 
         if (userId.isNotEmpty()) {
             viewModel.retriveData(userId)
             viewModel.muatStatistikDashboard(userId)
+        } else {
+            viewModel.clearDashboardData()
         }
     }
 
@@ -260,61 +267,84 @@ fun ScreenContent(modifier: Modifier = Modifier, userId: String, navController: 
                 Text("View All")
             }
         }
-        when (uiState.status) {
-            ApiStatus.LOADING -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ){
-                    CircularProgressIndicator()
-                }
+        if (userId.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = "Not Logged In",
+                    modifier = Modifier.size(64.dp),
+                    tint = Color.Gray
+                )
+                Text(
+                    text = "Silakan login untuk melihat data",
+                    modifier = Modifier.padding(top = 16.dp),
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
+                )
             }
-            ApiStatus.SUCCESS -> {
-                if (uiState.data.isEmpty()) {
-                    Column(
-                        modifier = modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+        } else {
+            when (uiState.status) {
+                ApiStatus.LOADING -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(text = stringResource(R.string.list_kosong))
+                        CircularProgressIndicator()
                     }
-                }else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(uiState.data) { barang ->
-                            val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
+                }
 
-                            CardBarang(
-                                label = barang.nama_barang,
-                                stock = barang.jumlah,
-                                barcode = barang.barcode,
-                                harga = barang.harga,
-                                image = imagePath,
-                                onClick = {
-                                    navController.navigate(Screen.EditBarang.withId(barang.id))
-                                    Log.d("MainScreen", "Berhasil masuk ke edit")
-                                }
-                            )
+                ApiStatus.SUCCESS -> {
+                    if (uiState.data.isEmpty()) {
+                        Column(
+                            modifier = modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = stringResource(R.string.list_kosong))
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(uiState.data) { barang ->
+                                val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
+
+                                CardBarang(
+                                    label = barang.nama_barang,
+                                    stock = barang.jumlah,
+                                    barcode = barang.barcode,
+                                    harga = barang.harga,
+                                    image = imagePath,
+                                    onClick = {
+                                        navController.navigate(Screen.EditBarang.withId(barang.id))
+                                        Log.d("MainScreen", "Berhasil masuk ke edit")
+                                    }
+                                )
+                            }
                         }
                     }
                 }
-            }
-            ApiStatus.FAILED -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = stringResource(id = R.string.error))
-                    Button(
-                        onClick = { viewModel.retriveData(userId) },
-                        modifier = Modifier.padding(top = 16.dp),
-                        contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+
+                ApiStatus.FAILED -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = stringResource(R.string.try_again))
+                        Text(text = stringResource(id = R.string.error))
+                        Button(
+                            onClick = { viewModel.retriveData(userId) },
+                            modifier = Modifier.padding(top = 16.dp),
+                            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+                        ) {
+                            Text(text = stringResource(R.string.try_again))
+                        }
                     }
                 }
             }

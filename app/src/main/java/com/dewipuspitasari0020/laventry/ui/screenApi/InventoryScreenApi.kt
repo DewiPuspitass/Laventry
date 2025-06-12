@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -91,6 +93,7 @@ fun InventoryScreenApi(navController: NavHostController) {
     val context = LocalContext.current
     val datastore = UserDataStore(context)
     val user by datastore.userFlow.collectAsState(User())
+    val userId = user.email
 
     val uiState by viewModel.uiState.collectAsState()
 
@@ -145,46 +148,49 @@ fun InventoryScreenApi(navController: NavHostController) {
                             )
                         }
                     }
-
                 },
                 actions = {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(color = white)
-                                .clickable { navController.navigate(Screen.TambahBarang.route) }
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Tambah",
-                                tint = Color.Black
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(color = white)
-                                .clickable { CoroutineScope(Dispatchers.IO).launch {
-                                    dataStore.saveLayout(!showList)
-                                } }
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    if (showList) R.drawable.baseline_grid_view_24
-                                    else R.drawable.baseline_view_list_24
-                                ),
-                                contentDescription = stringResource(
-                                    if (showList) R.string.grid
-                                    else R.string.list
+                    if (userId.isNotEmpty()) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(color = white)
+                                    .clickable { navController.navigate(Screen.TambahBarang.route) }
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Tambah",
+                                    tint = Color.Black
                                 )
-                            )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(color = white)
+                                    .clickable {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            dataStore.saveLayout(!showList)
+                                        }
+                                    }
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(
+                                        if (showList) R.drawable.baseline_grid_view_24
+                                        else R.drawable.baseline_view_list_24
+                                    ),
+                                    contentDescription = stringResource(
+                                        if (showList) R.string.grid
+                                        else R.string.list
+                                    )
+                                )
+                            }
                         }
                     }
                 },
@@ -216,84 +222,109 @@ fun InventoryScreenApi(navController: NavHostController) {
             )
         }
     ) { innerPadding ->
-        when (uiState.status) {
-            ApiStatus.LOADING -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+        if (user.email.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = "Not Logged In",
+                    modifier = Modifier.size(64.dp),
+                    tint = Color.Gray
+                )
+                Text(
+                    text = "Silakan login untuk melihat data",
+                    modifier = Modifier.padding(top = 16.dp),
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
+                )
             }
+        }else {
+            when (uiState.status) {
+                ApiStatus.LOADING -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
 
-            ApiStatus.SUCCESS -> {
-                Column(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .padding(16.dp)
-                ) {
-                    if (uiState.data.isEmpty()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(text = stringResource(R.string.list_kosong))
-                        }
-                    } else {
-                        if (showList) {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                ApiStatus.SUCCESS -> {
+                    Column(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .padding(16.dp)
+                    ) {
+                        if (uiState.data.isEmpty()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                items(uiState.data) { barang ->
-                                    val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
-
-                                    CardBarang(
-                                        label = barang.nama_barang,
-                                        stock = barang.jumlah,
-                                        barcode = barang.barcode,
-                                        harga = barang.harga,
-                                        image = imagePath,
-                                        onClick = {
-                                            navController.navigate(Screen.EditBarang.withId(barang.id))
-                                        }
-                                    )
-                                }
+                                Text(text = stringResource(R.string.list_kosong))
                             }
                         } else {
-                            LazyVerticalStaggeredGrid(
-                                modifier = Modifier.fillMaxSize(),
-                                columns = StaggeredGridCells.Fixed(2),
-                                verticalItemSpacing = 8.dp,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                contentPadding = PaddingValues(8.dp, 8.dp, 8.dp, 84.dp)
-                            ) {
-                                items(uiState.data) { barang ->
-                                    GridItemApi(barang = barang) {
-                                        navController.navigate(Screen.EditBarang.withId(barang.id))
+                            if (showList) {
+                                LazyColumn(
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    items(uiState.data) { barang ->
+                                        val imagePath = BarangApi.getGambarUrl(barang.foto_barang)
+
+                                        CardBarang(
+                                            label = barang.nama_barang,
+                                            stock = barang.jumlah,
+                                            barcode = barang.barcode,
+                                            harga = barang.harga,
+                                            image = imagePath,
+                                            onClick = {
+                                                navController.navigate(
+                                                    Screen.EditBarang.withId(
+                                                        barang.id
+                                                    )
+                                                )
+                                            }
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyVerticalStaggeredGrid(
+                                    modifier = Modifier.fillMaxSize(),
+                                    columns = StaggeredGridCells.Fixed(2),
+                                    verticalItemSpacing = 8.dp,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    contentPadding = PaddingValues(8.dp, 8.dp, 8.dp, 84.dp)
+                                ) {
+                                    items(uiState.data) { barang ->
+                                        GridItemApi(barang = barang) {
+                                            navController.navigate(Screen.EditBarang.withId(barang.id))
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            ApiStatus.FAILED -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = stringResource(id = R.string.error))
-                    Button(
-                        onClick = { viewModel.retriveData(user.email) },
-                        modifier = Modifier.padding(top = 16.dp),
-                        contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+                ApiStatus.FAILED -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = stringResource(R.string.try_again))
+                        Text(text = stringResource(id = R.string.error))
+                        Button(
+                            onClick = { viewModel.retriveData(user.email) },
+                            modifier = Modifier.padding(top = 16.dp),
+                            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+                        ) {
+                            Text(text = stringResource(R.string.try_again))
+                        }
                     }
                 }
             }

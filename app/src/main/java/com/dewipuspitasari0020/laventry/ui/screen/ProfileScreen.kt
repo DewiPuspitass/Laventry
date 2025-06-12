@@ -31,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.exceptions.ClearCredentialException
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -58,6 +61,7 @@ import com.dewipuspitasari0020.laventry.ui.screenApi.LogoutDialog
 import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.ui.theme.white
+import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,6 +72,10 @@ fun ProfileScreen(navController: NavHostController) {
     val context = LocalContext.current
     val datastore = UserDataStore(context)
     val user by datastore.userFlow.collectAsState(User())
+
+    val viewModel: BarangViewModelApi = viewModel()
+    val dataStore = UserDataStore(LocalContext.current)
+    val coroutineScope = rememberCoroutineScope()
 
     var showDialog by remember { mutableStateOf(false) }
     Scaffold(
@@ -181,14 +189,25 @@ fun ProfileScreen(navController: NavHostController) {
             ) {
                 Text(text = stringResource(R.string.logout))
             }
-
             if (showDialog) {
                 LogoutDialog(
-                    onDismissRequest = { showDialog = false }) {
-                    CoroutineScope(Dispatchers.IO).launch { signOut(context, datastore) }
-                    showDialog = false
-                    navController.navigate(Screen.Home.route)
-                }
+                    onDismissRequest = { showDialog = false },
+                    onConfirmation = {
+                        coroutineScope.launch {
+                            viewModel.onLogout()
+
+                            signOut(context, datastore)
+
+                            showDialog = false
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
+                        }
+                    }
+                )
             }
         }
     }
