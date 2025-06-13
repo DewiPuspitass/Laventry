@@ -89,9 +89,7 @@ import com.dewipuspitasari0020.laventry.ui.theme.LaventryTheme
 import com.dewipuspitasari0020.laventry.ui.theme.bg
 import com.dewipuspitasari0020.laventry.viewModel.BarangViewModelApi
 import com.dewipuspitasari0020.laventry.viewModel.KategoriViewModelApi
-import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
+import java.io.IOException
 
 const val KEY_ID_BARANG = "id"
 @RequiresApi(Build.VERSION_CODES.N)
@@ -478,7 +476,7 @@ fun AddItems(
 
                         val finalImageUri = imageUri
                         val bitmap = if ((imageUpdated || id == null) && finalImageUri != null) {
-                            uriToBitmap(context, finalImageUri)
+                            uriToBitmapSafe(context, finalImageUri)
                         } else null
 
                         if (id == null) {
@@ -494,7 +492,11 @@ fun AddItems(
                                     fotoBitmap = bitmap
                                 )
                             } else {
-                                imageError = "Gagal memproses gambar"
+                                imageError = if (finalImageUri != null) {
+                                    "Gagal memproses gambar. Coba gambar lain."
+                                } else {
+                                    "Gambar wajib dipilih"
+                                }
                             }
                         } else {
                             viewModel.updateBarang(
@@ -538,41 +540,43 @@ fun getFileSizeFromUri(context: Context, uri: Uri): Long {
     }
 }
 
-fun uriToBitmap(context: Context, uri: Uri): Bitmap? {
+fun uriToBitmapSafe(context: Context, uri: Uri, targetWidth: Int = 1024, targetHeight: Int = 1024): Bitmap? {
     return try {
-        when (uri.scheme) {
-            "content" -> {
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream)
-                }
-            }
-            "file" -> {
-                uri.path?.let { path ->
-                    BitmapFactory.decodeFile(path)
-                }
-            }
-            "http", "https" -> {
-                val url = URL(uri.toString())
-                val connection = url.openConnection() as HttpURLConnection
-                connection.doInput = true
-                connection.connect()
-                connection.inputStream.use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream)
-                }
-            }
-            null -> {
-                if (uri.path != null && File(uri.path!!).exists()) {
-                    BitmapFactory.decodeFile(uri.path)
-                } else {
-                    null
-                }
-            }
-            else -> null
+        var inputStream = context.contentResolver.openInputStream(uri)
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
         }
-    } catch (e: Exception) {
+        BitmapFactory.decodeStream(inputStream, null, options)
+        inputStream?.close()
+
+        options.inSampleSize = calculateInSampleSize(options, targetWidth, targetHeight)
+
+        options.inJustDecodeBounds = false
+
+        inputStream = context.contentResolver.openInputStream(uri)
+        val scaledBitmap = BitmapFactory.decodeStream(inputStream, null, options)
+        inputStream?.close()
+
+        scaledBitmap
+    } catch (e: IOException) {
         e.printStackTrace()
         null
     }
+}
+private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+    val (height: Int, width: Int) = options.run { outHeight to outWidth }
+    var inSampleSize = 1
+
+    if (height > reqHeight || width > reqWidth) {
+        val halfHeight: Int = height / 2
+        val halfWidth: Int = width / 2
+
+        while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+            inSampleSize *= 2
+        }
+    }
+
+    return inSampleSize
 }
 
 @Composable
