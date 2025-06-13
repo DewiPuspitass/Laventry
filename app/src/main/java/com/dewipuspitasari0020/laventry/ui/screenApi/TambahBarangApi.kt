@@ -445,6 +445,13 @@ fun AddItems(
         ) {
             Button(
                 onClick = {
+                    namaBarangError = ""
+                    jumlahError = ""
+                    hargaError = ""
+                    barcodeError = ""
+                    deskripsiError = ""
+                    selectedCategoryError = ""
+                    imageError = ""
                     imageError = ""
 
                     if (namaBarang.isBlank()) namaBarangError = "Nama Barang wajib diisi"
